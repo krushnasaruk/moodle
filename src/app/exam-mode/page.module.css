@@ -1,0 +1,278 @@
+.pageWrapper {
+    padding: calc(var(--navbar-height) + var(--space-2xl)) var(--space-lg) var(--space-3xl);
+    min-height: 100vh;
+}
+
+.pageInner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.examHeader {
+    text-align: center;
+    margin-bottom: var(--space-3xl);
+}
+
+.examIcon {
+    font-size: 3rem;
+    margin-bottom: var(--space-md);
+    display: inline-block;
+    animation: float 4s ease-in-out infinite;
+}
+
+.examTitle {
+    font-family: var(--font-heading);
+    font-size: 3.5rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: var(--space-sm);
+    color: var(--text-primary);
+}
+
+.examTitleAccent {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px var(--primary-glow);
+}
+
+.examDesc {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Subject Selector */
+.subjectSelector {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-3xl);
+}
+
+.subjectChip {
+    padding: 12px 28px;
+    border-radius: var(--radius-full);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(10px);
+}
+
+.subjectChip:hover {
+    background: var(--bg-surface);
+    transform: translateY(-2px);
+    border-color: var(--primary-light);
+}
+
+.subjectChipActive {
+    background: var(--gradient-brand);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 20px var(--primary-glow);
+}
+
+/* Tip Card */
+.tipCard {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+    margin: 0 auto var(--space-3xl);
+    box-shadow: var(--shadow-md);
+}
+
+.tipTitle {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--secondary);
+    margin-bottom: 8px;
+    font-size: 1.125rem;
+}
+
+.tipText {
+    color: var(--text-secondary);
+    font-size: 0.938rem;
+    line-height: 1.6;
+}
+
+/* Sections */
+.sectionTitle {
+    font-family: var(--font-heading);
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+}
+
+/* Summaries Grid */
+.summaryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: var(--space-xl);
+    margin-bottom: var(--space-3xl);
+}
+
+.summaryCard {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    transition: all var(--transition-normal);
+}
+
+.summaryCard:hover {
+    border-color: var(--primary-light);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transform: translateY(-4px);
+}
+
+.dark .summaryCard:hover {
+    box-shadow: 0 10px 30px var(--primary-glow);
+}
+
+.unitLabel {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--bg-input);
+    color: var(--primary-light);
+    border-radius: var(--radius-full);
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-md);
+    border: 1px solid var(--border);
+}
+
+.summaryTitle {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+}
+
+.summaryPoints {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.summaryPoint {
+    position: relative;
+    padding-left: 24px;
+    font-size: 0.938rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.summaryPoint::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--secondary);
+    font-weight: bold;
+}
+
+/* Questions Row Card */
+.questionsGrid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.questionCard {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    padding: var(--space-lg) var(--space-2xl);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+}
+
+.questionCard:hover {
+    background: var(--bg-surface);
+    transform: translateX(8px);
+    border-color: var(--primary-light);
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.05);
+}
+
+.dark .questionCard:hover {
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.questionNum {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--border);
+    min-width: 50px;
+    text-align: right;
+    transition: color var(--transition-fast);
+}
+
+.questionCard:hover .questionNum {
+    color: var(--primary-light);
+}
+
+.questionContent {
+    flex-grow: 1;
+}
+
+.questionText {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.questionMarks {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--accent);
+    border-radius: var(--radius-full);
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+    .examTitle {
+        font-size: 2.5rem;
+    }
+
+    .questionCard {
+        padding: var(--space-lg);
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+    }
+
+    .questionNum {
+        text-align: left;
+        font-size: 2rem;
+    }
+}
