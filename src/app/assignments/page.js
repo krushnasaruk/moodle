@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ScrollReveal } from '@/components/Animations';
 import styles from '../notes/page.module.css';
 import { IconAssignment, IconUser, IconFolder, IconHat, IconDownload, IconStar, IconSearch } from '@/components/Icons';
 
@@ -28,25 +29,29 @@ export default function AssignmentsPage() {
     return (
         <div className={styles.pageWrapper}>
             <div className={styles.pageInner}>
-                <div className={styles.pageHeader}>
-                    <h1 className={styles.pageTitle}><IconAssignment size={40} /> Assignments</h1>
-                    <p className={styles.pageDesc}>Ready-to-submit assignments with solutions — code and PDFs.</p>
-                </div>
-
-                <div className={styles.filters}>
-                    <div className={styles.filterGroup}>
-                        <select className={styles.filterSelect} value={subject} onChange={(e) => setSubject(e.target.value)}>
-                            {SUBJECTS.map(s => <option key={s} value={s}>{s === 'All' ? '📁 All Subjects' : s}</option>)}
-                        </select>
+                <ScrollReveal>
+                    <div className={styles.pageHeader}>
+                        <h1 className={styles.pageTitle}><IconAssignment size={40} /> Assignments</h1>
+                        <p className={styles.pageDesc}>Ready-to-submit assignments with solutions — code and PDFs.</p>
                     </div>
-                    <input
-                        type="text"
-                        className={styles.searchInput}
-                        placeholder="Search assignments..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                </ScrollReveal>
+
+                <ScrollReveal delay={100}>
+                    <div className={styles.filters}>
+                        <div className={styles.filterGroup}>
+                            <select className={styles.filterSelect} value={subject} onChange={(e) => setSubject(e.target.value)}>
+                                {SUBJECTS.map(s => <option key={s} value={s}>{s === 'All' ? '📁 All Subjects' : s}</option>)}
+                            </select>
+                        </div>
+                        <input
+                            type="text"
+                            className={styles.searchInput}
+                            placeholder="Search assignments..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                </ScrollReveal>
 
                 {filtered.length === 0 ? (
                     <div className={styles.emptyState}>
@@ -56,27 +61,29 @@ export default function AssignmentsPage() {
                     </div>
                 ) : (
                     <div className={styles.listContainer}>
-                        {filtered.map((item) => (
-                            <div key={item.id} className={styles.rowCard}>
-                                <div className={styles.cardIconArea}>
-                                    <IconAssignment size={32} className={styles.fileIcon} />
-                                    <span className={`${styles.cardBadge} ${item.format.includes('Code') ? styles.badgeCode : styles.badgePdf}`}>{item.format}</span>
-                                </div>
-                                <div className={styles.cardMain}>
-                                    <h3 className={styles.cardTitle}>{item.title}</h3>
-                                    <div className={styles.cardMeta}>
-                                        <span className={styles.metaItem}><IconUser /> <strong>{item.uploader}</strong></span>
-                                        <span className={styles.metaItem}><IconFolder /> {item.subject}</span>
-                                        <span className={styles.metaItem}><IconHat /> {item.year}</span>
+                        {filtered.map((item, i) => (
+                            <ScrollReveal key={item.id} delay={i * 80}>
+                                <div className={`${styles.rowCard} hover-lift`}>
+                                    <div className={styles.cardIconArea}>
+                                        <IconAssignment size={32} className={styles.fileIcon} />
+                                        <span className={`${styles.cardBadge} ${item.format.includes('Code') ? styles.badgeCode : styles.badgePdf}`}>{item.format}</span>
+                                    </div>
+                                    <div className={styles.cardMain}>
+                                        <h3 className={styles.cardTitle}>{item.title}</h3>
+                                        <div className={styles.cardMeta}>
+                                            <span className={styles.metaItem}><IconUser /> <strong>{item.uploader}</strong></span>
+                                            <span className={styles.metaItem}><IconFolder /> {item.subject}</span>
+                                            <span className={styles.metaItem}><IconHat /> {item.year}</span>
+                                        </div>
+                                    </div>
+                                    <div className={styles.cardActions}>
+                                        <div className={styles.rating}><IconStar /> {item.rating}</div>
+                                        <button className={styles.downloadBtn}>
+                                            <IconDownload size={18} /> Download
+                                        </button>
                                     </div>
                                 </div>
-                                <div className={styles.cardActions}>
-                                    <div className={styles.rating}><IconStar /> {item.rating}</div>
-                                    <button className={styles.downloadBtn}>
-                                        <IconDownload size={18} /> Download
-                                    </button>
-                                </div>
-                            </div>
+                            </ScrollReveal>
                         ))}
                     </div>
                 )}

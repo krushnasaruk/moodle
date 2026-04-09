@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ScrollReveal } from '@/components/Animations';
 import styles from '../notes/page.module.css';
 import { IconPyq, IconUser, IconFolder, IconCalendar, IconPen, IconDownload, IconStar, IconSearch } from '@/components/Icons';
 
@@ -33,28 +34,32 @@ export default function PYQsPage() {
     return (
         <div className={styles.pageWrapper}>
             <div className={styles.pageInner}>
-                <div className={styles.pageHeader}>
-                    <h1 className={styles.pageTitle}><IconPyq size={40} /> Previous Year Questions</h1>
-                    <p className={styles.pageDesc}>Practice with actual exam papers organized by subject and year.</p>
-                </div>
-
-                <div className={styles.filters}>
-                    <div className={styles.filterGroup}>
-                        <select className={styles.filterSelect} value={subject} onChange={(e) => setSubject(e.target.value)}>
-                            {SUBJECTS.map(s => <option key={s} value={s}>{s === 'All' ? '📁 All Subjects' : s}</option>)}
-                        </select>
-                        <select className={styles.filterSelect} value={examYear} onChange={(e) => setExamYear(e.target.value)}>
-                            {EXAM_YEARS.map(y => <option key={y} value={y}>{y === 'All' ? '📅 All Years' : y}</option>)}
-                        </select>
+                <ScrollReveal>
+                    <div className={styles.pageHeader}>
+                        <h1 className={styles.pageTitle}><IconPyq size={40} /> Previous Year Questions</h1>
+                        <p className={styles.pageDesc}>Practice with actual exam papers organized by subject and year.</p>
                     </div>
-                    <input
-                        type="text"
-                        className={styles.searchInput}
-                        placeholder="Search PYQs..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                </ScrollReveal>
+
+                <ScrollReveal delay={100}>
+                    <div className={styles.filters}>
+                        <div className={styles.filterGroup}>
+                            <select className={styles.filterSelect} value={subject} onChange={(e) => setSubject(e.target.value)}>
+                                {SUBJECTS.map(s => <option key={s} value={s}>{s === 'All' ? '📁 All Subjects' : s}</option>)}
+                            </select>
+                            <select className={styles.filterSelect} value={examYear} onChange={(e) => setExamYear(e.target.value)}>
+                                {EXAM_YEARS.map(y => <option key={y} value={y}>{y === 'All' ? '📅 All Years' : y}</option>)}
+                            </select>
+                        </div>
+                        <input
+                            type="text"
+                            className={styles.searchInput}
+                            placeholder="Search PYQs..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                </ScrollReveal>
 
                 {filtered.length === 0 ? (
                     <div className={styles.emptyState}>
@@ -64,28 +69,30 @@ export default function PYQsPage() {
                     </div>
                 ) : (
                     <div className={styles.listContainer}>
-                        {filtered.map((pyq) => (
-                            <div key={pyq.id} className={styles.rowCard}>
-                                <div className={styles.cardIconArea}>
-                                    <IconPyq size={32} className={styles.fileIcon} />
-                                    <span className={`${styles.cardBadge} ${styles.badgePyq}`}>PYQ</span>
-                                </div>
-                                <div className={styles.cardMain}>
-                                    <h3 className={styles.cardTitle}>{pyq.title}</h3>
-                                    <div className={styles.cardMeta}>
-                                        <span className={styles.metaItem}><IconUser /> <strong>{pyq.uploader}</strong></span>
-                                        <span className={styles.metaItem}><IconFolder /> {pyq.subject}</span>
-                                        <span className={styles.metaItem}><IconCalendar /> {pyq.year}</span>
-                                        <span className={styles.metaItem}><IconPen /> {pyq.marks}</span>
+                        {filtered.map((pyq, i) => (
+                            <ScrollReveal key={pyq.id} delay={i * 80}>
+                                <div className={`${styles.rowCard} hover-lift`}>
+                                    <div className={styles.cardIconArea}>
+                                        <IconPyq size={32} className={styles.fileIcon} />
+                                        <span className={`${styles.cardBadge} ${styles.badgePyq}`}>PYQ</span>
+                                    </div>
+                                    <div className={styles.cardMain}>
+                                        <h3 className={styles.cardTitle}>{pyq.title}</h3>
+                                        <div className={styles.cardMeta}>
+                                            <span className={styles.metaItem}><IconUser /> <strong>{pyq.uploader}</strong></span>
+                                            <span className={styles.metaItem}><IconFolder /> {pyq.subject}</span>
+                                            <span className={styles.metaItem}><IconCalendar /> {pyq.year}</span>
+                                            <span className={styles.metaItem}><IconPen /> {pyq.marks}</span>
+                                        </div>
+                                    </div>
+                                    <div className={styles.cardActions}>
+                                        <div className={styles.rating}><IconStar /> {pyq.rating}</div>
+                                        <button className={styles.downloadBtn}>
+                                            <IconDownload size={18} /> Download
+                                        </button>
                                     </div>
                                 </div>
-                                <div className={styles.cardActions}>
-                                    <div className={styles.rating}><IconStar /> {pyq.rating}</div>
-                                    <button className={styles.downloadBtn}>
-                                        <IconDownload size={18} /> Download
-                                    </button>
-                                </div>
-                            </div>
+                            </ScrollReveal>
                         ))}
                     </div>
                 )}

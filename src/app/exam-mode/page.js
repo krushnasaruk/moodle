@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ScrollReveal } from '@/components/Animations';
 import styles from './page.module.css';
 import { IconSparkles, IconLightbulb, IconClipboard, IconStar } from '@/components/Icons';
 
@@ -91,64 +92,78 @@ export default function ExamModePage() {
         <div className={styles.pageWrapper}>
             <div className={styles.pageInner}>
                 {/* Header */}
-                <div className={styles.examHeader}>
-                    <span className={styles.examIcon}><IconSparkles size={48} /></span>
-                    <h1 className={styles.examTitle}>
-                        <span className={styles.examTitleAccent}>Last Night</span> Prep
-                    </h1>
-                    <p className={styles.examDesc}>
-                        Quick unit-wise summaries and important questions for your upcoming exams. Study smart, not hard.
-                    </p>
-                </div>
+                <ScrollReveal>
+                    <div className={styles.examHeader}>
+                        <span className={styles.examIcon}><IconSparkles size={48} /></span>
+                        <h1 className={styles.examTitle}>
+                            <span className={`${styles.examTitleAccent} text-shimmer`}>Last Night</span> Prep
+                        </h1>
+                        <p className={styles.examDesc}>
+                            Quick unit-wise summaries and important questions for your upcoming exams. Study smart, not hard.
+                        </p>
+                    </div>
+                </ScrollReveal>
 
                 {/* Subject Chips */}
-                <div className={styles.subjectSelector}>
-                    {SUBJECTS.map(sub => (
-                        <button
-                            key={sub}
-                            className={`${styles.subjectChip} ${selected === sub ? styles.subjectChipActive : ''}`}
-                            onClick={() => setSelected(sub)}
-                        >
-                            {sub}
-                        </button>
-                    ))}
-                </div>
+                <ScrollReveal delay={100}>
+                    <div className={styles.subjectSelector}>
+                        {SUBJECTS.map(sub => (
+                            <button
+                                key={sub}
+                                className={`${styles.subjectChip} ${selected === sub ? styles.subjectChipActive : ''}`}
+                                onClick={() => setSelected(sub)}
+                            >
+                                {sub}
+                            </button>
+                        ))}
+                    </div>
+                </ScrollReveal>
 
                 {/* Tip */}
-                <div className={styles.tipCard}>
-                    <div className={styles.tipTitle}><IconLightbulb size={20} /> Pro Tip</div>
-                    <div className={styles.tipText}>
-                        Focus on the unit-wise key points below. These cover 80% of what is asked in exams. Practice the important questions at the bottom — they are the most frequently repeated.
+                <ScrollReveal delay={200}>
+                    <div className={styles.tipCard}>
+                        <div className={styles.tipTitle}><IconLightbulb size={20} /> Pro Tip</div>
+                        <div className={styles.tipText}>
+                            Focus on the unit-wise key points below. These cover 80% of what is asked in exams. Practice the important questions at the bottom — they are the most frequently repeated.
+                        </div>
                     </div>
-                </div>
+                </ScrollReveal>
 
                 {/* Unit Summaries */}
-                <h2 className={styles.sectionTitle}><IconClipboard size={28} /> Unit-wise Summary — {selected}</h2>
+                <ScrollReveal delay={300}>
+                    <h2 className={styles.sectionTitle}><IconClipboard size={28} /> Unit-wise Summary — {selected}</h2>
+                </ScrollReveal>
                 <div className={styles.summaryGrid}>
                     {summaries.map((s, i) => (
-                        <div key={i} className={styles.summaryCard}>
-                            <span className={styles.unitLabel}>{s.unit}</span>
-                            <h3 className={styles.summaryTitle}>{s.title}</h3>
-                            <div className={styles.summaryPoints}>
-                                {s.points.map((p, j) => (
-                                    <div key={j} className={styles.summaryPoint}>{p}</div>
-                                ))}
+                        <ScrollReveal key={i} delay={i * 100}>
+                            <div className={`${styles.summaryCard} hover-lift`}>
+                                <span className={styles.unitLabel}>{s.unit}</span>
+                                <h3 className={styles.summaryTitle}>{s.title}</h3>
+                                <div className={styles.summaryPoints}>
+                                    {s.points.map((p, j) => (
+                                        <div key={j} className={styles.summaryPoint}>{p}</div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        </ScrollReveal>
                     ))}
                 </div>
 
                 {/* Important Questions */}
-                <h2 className={styles.sectionTitle}><IconStar size={28} /> Important Questions — {selected}</h2>
+                <ScrollReveal>
+                    <h2 className={styles.sectionTitle}><IconStar size={28} /> Important Questions — {selected}</h2>
+                </ScrollReveal>
                 <div className={styles.questionsGrid}>
                     {questions.map((q, i) => (
-                        <div key={i} className={styles.questionCard}>
-                            <div className={styles.questionNum}>{i + 1}</div>
-                            <div className={styles.questionContent}>
-                                <div className={styles.questionText}>{q.q}</div>
-                                <div className={styles.questionMarks}>{q.marks}</div>
+                        <ScrollReveal key={i} delay={i * 80}>
+                            <div className={`${styles.questionCard} hover-lift`}>
+                                <div className={styles.questionNum}>{i + 1}</div>
+                                <div className={styles.questionContent}>
+                                    <div className={styles.questionText}>{q.q}</div>
+                                    <div className={styles.questionMarks}>{q.marks}</div>
+                                </div>
                             </div>
-                        </div>
+                        </ScrollReveal>
                     ))}
                 </div>
             </div>

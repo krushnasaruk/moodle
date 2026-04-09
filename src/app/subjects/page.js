@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { BRANCHES, YEARS, SEMESTERS, SUBJECT_MAP, getSubjects } from '@/lib/subjectMap';
+import { ScrollReveal } from '@/components/Animations';
 import { IconNotes, IconPyq, IconAssignment, IconFolder, IconStar } from '@/components/Icons';
 import styles from './page.module.css';
 
@@ -63,24 +64,28 @@ export default function SubjectsPage() {
     return (
         <div className={styles.pageWrapper}>
             <div className={styles.pageInner}>
-                <div className={styles.pageHeader}>
-                    <h1 className={styles.pageTitle}><IconFolder size={32} /> Subjects</h1>
-                    <p className={styles.pageSubtitle}>Browse study material organized by subject</p>
-                </div>
+                <ScrollReveal>
+                    <div className={styles.pageHeader}>
+                        <h1 className={styles.pageTitle}><IconFolder size={32} /> Subjects</h1>
+                        <p className={styles.pageSubtitle}>Browse study material organized by subject</p>
+                    </div>
+                </ScrollReveal>
 
                 {/* Filters */}
-                <div className={styles.filterBar}>
-                    <select className={styles.filterSelect} value={branch} onChange={(e) => { setBranch(e.target.value); setSemester(''); }}>
-                        {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
-                    </select>
-                    <select className={styles.filterSelect} value={year} onChange={(e) => { setYear(e.target.value); setSemester(''); }}>
-                        {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                    </select>
-                    <select className={styles.filterSelect} value={semester} onChange={(e) => setSemester(e.target.value)} disabled={!year}>
-                        <option value="">Select Semester</option>
-                        {availableSemesters.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                </div>
+                <ScrollReveal delay={100}>
+                    <div className={styles.filterBar}>
+                        <select className={styles.filterSelect} value={branch} onChange={(e) => { setBranch(e.target.value); setSemester(''); }}>
+                            {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                        </select>
+                        <select className={styles.filterSelect} value={year} onChange={(e) => { setYear(e.target.value); setSemester(''); }}>
+                            {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                        <select className={styles.filterSelect} value={semester} onChange={(e) => setSemester(e.target.value)} disabled={!year}>
+                            <option value="">Select Semester</option>
+                            {availableSemesters.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+                </ScrollReveal>
 
                 {/* Subject Grid */}
                 {subjects.length > 0 ? (
@@ -88,33 +93,35 @@ export default function SubjectsPage() {
                         {subjects.map((subj, i) => {
                             const content = SAMPLE_CONTENT[subj] || [];
                             return (
-                                <div key={subj} className={styles.subjectCard} style={{ animationDelay: `${i * 0.05}s` }}>
-                                    <div className={styles.subjectCardHeader}>
-                                        <div className={styles.subjectIcon}><IconNotes size={24} /></div>
-                                        <h3 className={styles.subjectName}>{subj}</h3>
+                                <ScrollReveal key={subj} delay={i * 80}>
+                                    <div className={`${styles.subjectCard} hover-lift`} style={{ animationDelay: `${i * 0.05}s` }}>
+                                        <div className={styles.subjectCardHeader}>
+                                            <div className={styles.subjectIcon}><IconNotes size={24} /></div>
+                                            <h3 className={styles.subjectName}>{subj}</h3>
+                                        </div>
+
+                                        {content.length > 0 ? (
+                                            <div className={styles.contentList}>
+                                                {content.map(item => (
+                                                    <div key={item.id} className={styles.contentItem}>
+                                                        <span className={`${styles.contentType} ${getTypeClass(item.type)}`}>{getTypeIcon(item.type)} {item.type}</span>
+                                                        <span className={styles.contentTitle}>{item.title}</span>
+                                                        <span className={styles.contentRating}><IconStar size={12} /> {item.rating}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className={styles.noContent}>
+                                                <p>No materials yet</p>
+                                                <Link href="/upload" className={styles.uploadLink}>Be the first to upload →</Link>
+                                            </div>
+                                        )}
+
+                                        <Link href={`/notes?q=${encodeURIComponent(subj)}`} className={styles.viewAllLink}>
+                                            View all {subj} materials →
+                                        </Link>
                                     </div>
-
-                                    {content.length > 0 ? (
-                                        <div className={styles.contentList}>
-                                            {content.map(item => (
-                                                <div key={item.id} className={styles.contentItem}>
-                                                    <span className={`${styles.contentType} ${getTypeClass(item.type)}`}>{getTypeIcon(item.type)} {item.type}</span>
-                                                    <span className={styles.contentTitle}>{item.title}</span>
-                                                    <span className={styles.contentRating}><IconStar size={12} /> {item.rating}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className={styles.noContent}>
-                                            <p>No materials yet</p>
-                                            <Link href="/upload" className={styles.uploadLink}>Be the first to upload →</Link>
-                                        </div>
-                                    )}
-
-                                    <Link href={`/notes?q=${encodeURIComponent(subj)}`} className={styles.viewAllLink}>
-                                        View all {subj} materials →
-                                    </Link>
-                                </div>
+                                </ScrollReveal>
                             );
                         })}
                     </div>
@@ -128,3 +135,4 @@ export default function SubjectsPage() {
         </div>
     );
 }
+

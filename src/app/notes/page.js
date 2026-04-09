@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { ScrollReveal } from '@/components/Animations';
 import styles from './page.module.css';
 import { IconNotes, IconUser, IconFolder, IconHat, IconDownload, IconStar, IconHeart, IconSearch } from '@/components/Icons';
 
@@ -51,28 +52,32 @@ function NotesContent() {
     return (
         <div className={styles.pageWrapper}>
             <div className={styles.pageInner}>
-                <div className={styles.pageHeader}>
-                    <h1 className={styles.pageTitle}><IconNotes size={40} /> Notes</h1>
-                    <p className={styles.pageDesc}>Browse and download study notes organized by subject, branch, and year.</p>
-                </div>
-
-                <div className={styles.filters}>
-                    <div className={styles.filterGroup}>
-                        <select className={styles.filterSelect} value={branch} onChange={(e) => setBranch(e.target.value)}>
-                            {BRANCHES.map(b => <option key={b} value={b}>{b === 'All' ? '🏫 All Branches' : b}</option>)}
-                        </select>
-                        <select className={styles.filterSelect} value={year} onChange={(e) => setYear(e.target.value)}>
-                            {YEARS.map(y => <option key={y} value={y}>{y === 'All' ? '🎓 All Years' : y}</option>)}
-                        </select>
+                <ScrollReveal>
+                    <div className={styles.pageHeader}>
+                        <h1 className={styles.pageTitle}><IconNotes size={40} /> Notes</h1>
+                        <p className={styles.pageDesc}>Browse and download study notes organized by subject, branch, and year.</p>
                     </div>
-                    <input
-                        type="text"
-                        className={styles.searchInput}
-                        placeholder="Search notes by title or subject..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
+                </ScrollReveal>
+
+                <ScrollReveal delay={100}>
+                    <div className={styles.filters}>
+                        <div className={styles.filterGroup}>
+                            <select className={styles.filterSelect} value={branch} onChange={(e) => setBranch(e.target.value)}>
+                                {BRANCHES.map(b => <option key={b} value={b}>{b === 'All' ? '🏫 All Branches' : b}</option>)}
+                            </select>
+                            <select className={styles.filterSelect} value={year} onChange={(e) => setYear(e.target.value)}>
+                                {YEARS.map(y => <option key={y} value={y}>{y === 'All' ? '🎓 All Years' : y}</option>)}
+                            </select>
+                        </div>
+                        <input
+                            type="text"
+                            className={styles.searchInput}
+                            placeholder="Search notes by title or subject..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                </ScrollReveal>
 
                 {filtered.length === 0 ? (
                     <div className={styles.emptyState}>
@@ -82,44 +87,46 @@ function NotesContent() {
                     </div>
                 ) : (
                     <div className={styles.listContainer}>
-                        {filtered.map((note) => (
-                            <div key={note.id} className={styles.rowCard}>
-                                <div className={styles.cardIconArea}>
-                                    <IconNotes size={32} className={styles.fileIcon} />
-                                    <span className={`${styles.cardBadge} ${styles.badgeNotes}`}>Notes</span>
-                                </div>
+                        {filtered.map((note, i) => (
+                            <ScrollReveal key={note.id} delay={i * 80}>
+                                <div className={`${styles.rowCard} hover-lift`}>
+                                    <div className={styles.cardIconArea}>
+                                        <IconNotes size={32} className={styles.fileIcon} />
+                                        <span className={`${styles.cardBadge} ${styles.badgeNotes}`}>Notes</span>
+                                    </div>
 
-                                <div className={styles.cardMain}>
-                                    <h3 className={styles.cardTitle}>{note.title}</h3>
-                                    <div className={styles.cardMeta}>
-                                        <span className={styles.metaItem}><IconUser /> <strong>{note.uploader}</strong></span>
-                                        <span className={styles.metaItem}><IconFolder /> {note.subject}</span>
-                                        <span className={styles.metaItem}><IconHat /> {note.year}</span>
-                                        <span className={styles.metaItem}><IconDownload /> {note.downloads} dls</span>
+                                    <div className={styles.cardMain}>
+                                        <h3 className={styles.cardTitle}>{note.title}</h3>
+                                        <div className={styles.cardMeta}>
+                                            <span className={styles.metaItem}><IconUser /> <strong>{note.uploader}</strong></span>
+                                            <span className={styles.metaItem}><IconFolder /> {note.subject}</span>
+                                            <span className={styles.metaItem}><IconHat /> {note.year}</span>
+                                            <span className={styles.metaItem}><IconDownload /> {note.downloads} dls</span>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.cardActions}>
+                                        <div className={styles.rating}><IconStar /> {note.rating}</div>
+                                        <div className={styles.actionRow}>
+                                            <button
+                                                className={styles.likeBtn}
+                                                onClick={() => toggleLike(note.id)}
+                                                title="Like this note"
+                                            >
+                                                <IconHeart fill={liked[note.id] ? "#ef4444" : "none"} stroke={liked[note.id] ? "#ef4444" : "currentColor"} />
+                                            </button>
+                                            <button className={styles.downloadBtn}>
+                                                <IconDownload size={18} /> Download
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div className={styles.cardActions}>
-                                    <div className={styles.rating}><IconStar /> {note.rating}</div>
-                                    <div className={styles.actionRow}>
-                                        <button
-                                            className={styles.likeBtn}
-                                            onClick={() => toggleLike(note.id)}
-                                            title="Like this note"
-                                        >
-                                            <IconHeart fill={liked[note.id] ? "#ef4444" : "none"} stroke={liked[note.id] ? "#ef4444" : "currentColor"} />
-                                        </button>
-                                        <button className={styles.downloadBtn}>
-                                            <IconDownload size={18} /> Download
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            </ScrollReveal>
                         ))}
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }
 

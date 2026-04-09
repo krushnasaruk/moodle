@@ -64,9 +64,7 @@ export default function HomePage() {
           <h1 className={styles.heroTitle}>
             <TextReveal text="Find Notes. Ace Exams." tag="span" delay={200} />
             <br />
-            <span className={`${styles.heroTitleAccent} text-shimmer`}>
-              <TextReveal text="Study Smarter." tag="span" delay={600} />
-            </span>
+            <span className={`${styles.heroTitleAccent} text-shimmer`}>Study Smarter.</span>
           </h1>
 
           <ScrollReveal delay={400}>
