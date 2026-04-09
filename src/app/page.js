@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { ScrollReveal, TextReveal, CountUp } from '@/components/Animations';
 import styles from './page.module.css';
 import { IconNotes, IconPyq, IconAssignment, IconSparkles, IconUser, IconFolder, IconHat, IconStar, IconDownload } from '@/components/Icons';
 
@@ -37,7 +38,6 @@ export default function HomePage() {
     }
   };
 
-  // Personalized filtering
   const userSubjects = user?.subjects || [];
   const userBranch = user?.branch || '';
   const userYear = user?.year || '';
@@ -57,46 +57,58 @@ export default function HomePage() {
       {/* Hero */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
-          <span className={styles.heroTag}>🚀 Your college companion</span>
+          <ScrollReveal delay={0}>
+            <span className={styles.heroTag}>🚀 Your college companion</span>
+          </ScrollReveal>
+
           <h1 className={styles.heroTitle}>
-            Find Notes. Ace Exams.{' '}
-            <span className={styles.heroTitleAccent}>Study Smarter.</span>
+            <TextReveal text="Find Notes. Ace Exams." tag="span" delay={200} />
+            <br />
+            <span className={`${styles.heroTitleAccent} text-shimmer`}>
+              <TextReveal text="Study Smarter." tag="span" delay={600} />
+            </span>
           </h1>
-          <p className={styles.heroSubtitle}>
-            Access notes, previous year questions, assignments, and exam prep — all in one place. Built by students, for students.
-          </p>
-          <form className={styles.heroSearch} onSubmit={handleHeroSearch}>
-            <input
-              type="text"
-              className={styles.heroSearchInput}
-              placeholder="Search for DBMS notes, OS PYQs, DSA assignments..."
-              value={heroQuery}
-              onChange={(e) => setHeroQuery(e.target.value)}
-            />
-            <button type="submit" className={styles.heroSearchBtn}>Search</button>
-          </form>
+
+          <ScrollReveal delay={400}>
+            <p className={styles.heroSubtitle}>
+              Access notes, previous year questions, assignments, and exam prep — all in one place. Built by students, for students.
+            </p>
+          </ScrollReveal>
+
+          <ScrollReveal delay={600}>
+            <form className={`${styles.heroSearch} pulse-glow`} onSubmit={handleHeroSearch}>
+              <input
+                type="text"
+                className={styles.heroSearchInput}
+                placeholder="Search for DBMS notes, OS PYQs, DSA assignments..."
+                value={heroQuery}
+                onChange={(e) => setHeroQuery(e.target.value)}
+              />
+              <button type="submit" className={styles.heroSearchBtn}>Search</button>
+            </form>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* Quick Access */}
       <section className={styles.quickAccess}>
-        <div className={styles.quickGrid}>
-          <Link href="/notes" className={styles.quickCard}>
+        <div className={`${styles.quickGrid} stagger-children`}>
+          <Link href="/notes" className={`${styles.quickCard} hover-lift`}>
             <div className={`${styles.quickIcon} ${styles.quickIconNotes}`}><IconNotes size={28} /></div>
             <div className={styles.quickTitle}>Notes</div>
             <div className={styles.quickDesc}>Subject-wise study material</div>
           </Link>
-          <Link href="/pyqs" className={styles.quickCard}>
+          <Link href="/pyqs" className={`${styles.quickCard} hover-lift`}>
             <div className={`${styles.quickIcon} ${styles.quickIconPyqs}`}><IconPyq size={28} /></div>
             <div className={styles.quickTitle}>PYQs</div>
             <div className={styles.quickDesc}>Previous year questions</div>
           </Link>
-          <Link href="/assignments" className={styles.quickCard}>
+          <Link href="/assignments" className={`${styles.quickCard} hover-lift`}>
             <div className={`${styles.quickIcon} ${styles.quickIconAssign}`}><IconAssignment size={28} /></div>
             <div className={styles.quickTitle}>Assignments</div>
             <div className={styles.quickDesc}>Ready solutions & code</div>
           </Link>
-          <Link href="/exam-mode" className={styles.quickCard}>
+          <Link href="/exam-mode" className={`${styles.quickCard} hover-lift`}>
             <div className={`${styles.quickIcon} ${styles.quickIconExam}`}><IconSparkles size={28} /></div>
             <div className={styles.quickTitle}>Exam Mode</div>
             <div className={styles.quickDesc}>Last night prep</div>
@@ -106,58 +118,64 @@ export default function HomePage() {
 
       {/* Personalized / Recent Uploads */}
       <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>{sectionLabel}</h2>
-          <Link href="/notes" className={styles.sectionLink}>View all →</Link>
-        </div>
+        <ScrollReveal>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>{sectionLabel}</h2>
+            <Link href="/notes" className={styles.sectionLink}>View all →</Link>
+          </div>
+        </ScrollReveal>
         <div className={styles.recentGrid}>
-          {recommended.map((note) => (
-            <div key={note.id} className={styles.noteCard}>
-              <div className={styles.noteCardBody}>
-                <span className={`${styles.noteCardType} ${getTypeClass(note.type)}`}>
-                  {note.type}
-                </span>
-                <h3 className={styles.noteCardTitle}>{note.title}</h3>
-                <div className={styles.noteCardMeta}>
-                  <span><IconUser /> {note.uploader}</span>
-                  <span><IconFolder /> {note.subject}</span>
-                  <span><IconHat /> {note.year}</span>
-                </div>
-                <div style={{ flexGrow: 1 }}></div>
-                <div className={styles.noteCardFooter}>
-                  <div className={styles.noteCardRating}>
-                    <IconStar /> {note.rating}
+          {recommended.map((note, i) => (
+            <ScrollReveal key={note.id} delay={i * 100}>
+              <div className={`${styles.noteCard} hover-lift`}>
+                <div className={styles.noteCardBody}>
+                  <span className={`${styles.noteCardType} ${getTypeClass(note.type)}`}>
+                    {note.type}
+                  </span>
+                  <h3 className={styles.noteCardTitle}>{note.title}</h3>
+                  <div className={styles.noteCardMeta}>
+                    <span><IconUser /> {note.uploader}</span>
+                    <span><IconFolder /> {note.subject}</span>
+                    <span><IconHat /> {note.year}</span>
                   </div>
-                  <button className={styles.downloadBtn}>
-                    <IconDownload size={18} /> Download
-                  </button>
+                  <div style={{ flexGrow: 1 }}></div>
+                  <div className={styles.noteCardFooter}>
+                    <div className={styles.noteCardRating}>
+                      <IconStar /> {note.rating}
+                    </div>
+                    <button className={styles.downloadBtn}>
+                      <IconDownload size={18} /> Download
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </section>
 
       {/* Stats */}
       <section className={styles.stats}>
-        <div className={styles.statsGrid}>
-          <div className={styles.statItem}>
-            <div className={styles.statNumber}>2,500+</div>
-            <div className={styles.statLabel}>Notes Uploaded</div>
+        <ScrollReveal>
+          <div className={styles.statsGrid}>
+            <div className={styles.statItem}>
+              <div className={styles.statNumber}><CountUp end={2500} suffix="+" /></div>
+              <div className={styles.statLabel}>Notes Uploaded</div>
+            </div>
+            <div className={styles.statItem}>
+              <div className={styles.statNumber}><CountUp end={1200} suffix="+" /></div>
+              <div className={styles.statLabel}>Students Active</div>
+            </div>
+            <div className={styles.statItem}>
+              <div className={styles.statNumber}><CountUp end={500} suffix="+" /></div>
+              <div className={styles.statLabel}>PYQs Available</div>
+            </div>
+            <div className={styles.statItem}>
+              <div className={styles.statNumber}><CountUp end={50} suffix="+" /></div>
+              <div className={styles.statLabel}>Subjects Covered</div>
+            </div>
           </div>
-          <div className={styles.statItem}>
-            <div className={styles.statNumber}>1,200+</div>
-            <div className={styles.statLabel}>Students Active</div>
-          </div>
-          <div className={styles.statItem}>
-            <div className={styles.statNumber}>500+</div>
-            <div className={styles.statLabel}>PYQs Available</div>
-          </div>
-          <div className={styles.statItem}>
-            <div className={styles.statNumber}>50+</div>
-            <div className={styles.statLabel}>Subjects Covered</div>
-          </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* Footer */}

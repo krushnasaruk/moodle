@@ -2,6 +2,7 @@ import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import Navbar from '@/components/Navbar/Navbar';
+import CustomCursor from '@/components/CustomCursor';
 
 export const metadata = {
   title: 'StudyHub. — The Student OS',
@@ -15,6 +16,7 @@ export default function RootLayout({ children }) {
       <body>
         <ThemeProvider>
           <AuthProvider>
+            <CustomCursor />
             <Navbar />
             <main>{children}</main>
           </AuthProvider>
@@ -23,3 +25,4 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
