@@ -55,25 +55,35 @@
     transform: translateY(-2px);
 }
 
-/* Profile Header */
+/* Profile Header (Student ID Card Style) */
 .profileHeader {
     display: flex;
     align-items: center;
     gap: var(--space-xl);
-    padding: var(--space-xl);
-    background: var(--bg-card);
+    padding: var(--space-3xl) var(--space-2xl);
+    background: linear-gradient(135deg, rgba(30, 30, 36, 0.8), rgba(20, 20, 24, 0.95));
     border: 1px solid var(--border);
+    margin-bottom: var(--space-3xl);
     border-radius: var(--radius-xl);
     backdrop-filter: blur(20px);
-    margin-bottom: var(--space-xl);
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.profileHeader::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm20 20h20v20H20V20zM0 20h20v20H0V20z' fill='%23ffffff' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
 }
 
 .profileAvatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid var(--primary);
+    width: 110px;
+    height: 110px;
+    position: relative;
+    z-index: 1;
     flex-shrink: 0;
 }
 
@@ -81,6 +91,11 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 30px var(--primary-glow);
+    overflow: hidden;
+    display: block;
 }
 
 .profileAvatarFallback {
@@ -91,60 +106,201 @@
     align-items: center;
     justify-content: center;
     color: white;
-    font-weight: 700;
-    font-size: 2rem;
+    font-weight: 800;
+    font-size: 3rem;
     font-family: var(--font-heading);
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 30px var(--primary-glow);
+    overflow: hidden;
+}
+
+.profileInfo {
+    position: relative;
+    z-index: 1;
 }
 
 .profileInfo h1 {
     font-family: var(--font-heading);
-    font-size: 1.75rem;
+    font-size: 2.5rem;
     font-weight: 800;
     color: var(--text-primary);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
+    margin-bottom: 2px;
+    line-height: 1.1;
 }
 
 .profileInfo p {
     color: var(--text-secondary);
-    font-size: 0.875rem;
+    font-size: 1rem;
+    font-weight: 500;
 }
 
-.collegeName {
-    color: var(--primary-light) !important;
-    font-weight: 600 !important;
-}
-
-.memberSince {
-    color: var(--text-muted) !important;
-    font-size: 0.75rem !important;
-    margin-top: var(--space-xs);
-}
-
-.profileTags {
-    display: flex;
-    gap: 8px;
-    margin-top: var(--space-sm);
-    flex-wrap: wrap;
-}
-
-.profileTag {
+/* Gamification Elements */
+.levelBadge {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+    color: white;
     padding: 4px 12px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
     border-radius: var(--radius-full);
     font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-secondary);
+    font-weight: 800;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    border: 2px solid rgba(255,255,255,0.1);
+    z-index: 2;
+    white-space: nowrap;
+    min-width: max-content;
 }
 
-/* Academic Profile */
-.profileSection {
+.pointsBadge {
+    background: rgba(254, 228, 64, 0.15);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 700;
+    border: 1px solid rgba(254, 228, 64, 0.3);
+}
+
+.progressContainer {
+    margin-top: 24px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255,255,255,0.05);
+    max-width: 400px;
+}
+
+.progressHeader {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.813rem;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.progressBar {
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    border-radius: 4px;
+    transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Badges Showcase */
+.badgesWrapper {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-2xl);
+    flex-wrap: wrap;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.badgeItem {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.badgeItem:hover {
+    transform: translateY(-3px);
+}
+
+.badgeIcon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+}
+
+.badgeName {
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+/* Bento Grid Structure */
+.bentoGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+    margin-bottom: var(--space-2xl);
+}
+
+.bentoTile {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     padding: var(--space-xl);
-    margin-bottom: var(--space-xl);
     backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: border-color 0.3s ease;
+}
+
+.bentoTile:hover {
+    border-color: rgba(255,255,255,0.15);
+}
+
+.bentoStats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+}
+
+.bentoStatCard {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(255,255,255,0.03);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.bentoStatNum {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.bentoStatLabel {
+    font-size: 0.813rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+}
+
+.uploadsTile {
+    grid-column: 1 / -1;
+}
+
+/* Academic Profile */
+.profileSection {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .profileSectionHeader {
@@ -458,7 +614,48 @@
     gap: 4px;
 }
 
-/* Empty state */
+/* Empty state (Gamified) */
+.emptyStateGamified {
+    padding: var(--space-3xl);
+    text-align: center;
+    background: linear-gradient(135deg, rgba(157, 78, 221, 0.1), rgba(0, 245, 212, 0.05));
+    border: 1px dashed rgba(157, 78, 221, 0.3);
+    border-radius: var(--radius-xl);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
+    animation: fadeInUp 0.5s ease-out;
+    margin-top: var(--space-md);
+}
+
+.bountyIcon {
+    font-size: 3.5rem;
+    margin-bottom: var(--space-md);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); filter: brightness(1.2); }
+    100% { transform: scale(1); }
+}
+
+.btnBounty {
+    display: inline-block;
+    padding: 12px 24px;
+    background: var(--primary);
+    color: white;
+    font-weight: 800;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(157, 78, 221, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btnBounty:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(157, 78, 221, 0.6);
+    background: var(--primary-light);
+}
+
 .emptyState {
     text-align: center;
     padding: var(--space-3xl);
@@ -484,14 +681,50 @@
     color: var(--text-secondary);
 }
 
+/* Status badges */
+.statusPending {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.688rem;
+    font-weight: 700;
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+.statusApproved {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.688rem;
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.statusRejected {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.688rem;
+    font-weight: 700;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+@media (max-width: 900px) {
+    .bentoGrid {
+        grid-template-columns: 1fr;
+    }
+    .bentoTile {
+        grid-column: 1 / -1 !important;
+    }
+}
+
 @media (max-width: 600px) {
     .profileHeader {
         flex-direction: column;
         text-align: center;
-    }
-
-    .statsGrid {
-        grid-template-columns: 1fr;
     }
 
     .profileGrid,

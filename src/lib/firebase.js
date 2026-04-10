@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, browserLocalPersistence, setPersistence } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -27,10 +27,24 @@ try {
   }
   googleProvider = new GoogleAuthProvider();
   googleProvider.setCustomParameters({ prompt: 'select_account' });
-  db = getFirestore(app);
+
+  // Initialize Firestore with experimentalForceLongPolling to fix "client offline" issues
+  // This bypasses WebSocket and uses HTTP long-polling instead, which works on all networks
+  db = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+    useFetchStreams: false,
+  });
+
   storage = getStorage(app);
 } catch (error) {
-  console.warn('Firebase initialization failed:', error.message);
+  // If Firestore was already initialized (HMR), fall back to getFirestore
+  if (error.code === 'failed-precondition' || error.message?.includes('already been called')) {
+    const { getFirestore } = require('firebase/firestore');
+    db = getFirestore(app);
+    storage = getStorage(app);
+  } else {
+    console.warn('Firebase initialization failed:', error.message);
+  }
 }
 
 export { auth, googleProvider, db, storage };

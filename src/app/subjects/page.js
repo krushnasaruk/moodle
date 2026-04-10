@@ -1,36 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
-import { BRANCHES, YEARS, SEMESTERS, SUBJECT_MAP, getSubjects } from '@/lib/subjectMap';
+import { BRANCHES, YEARS, SEMESTERS, getSubjects } from '@/lib/subjectMap';
 import { ScrollReveal } from '@/components/Animations';
-import { IconNotes, IconPyq, IconAssignment, IconFolder, IconStar } from '@/components/Icons';
+import { IconNotes, IconPyq, IconAssignment, IconFolder, IconStar, IconDownload, IconLock } from '@/components/Icons';
 import styles from './page.module.css';
-
-// Sample data for each subject
-const SAMPLE_CONTENT = {
-    'DBMS': [
-        { id: '1', title: 'DBMS Complete Notes - Unit 1 to 5', type: 'Notes', rating: 4.8, downloads: 234 },
-        { id: '2', title: 'DBMS PYQ 2024 Solved', type: 'PYQ', rating: 4.5, downloads: 189 },
-        { id: '3', title: 'DBMS ER Diagram Assignment', type: 'Assignment', rating: 4.2, downloads: 100 },
-    ],
-    'Data Structures': [
-        { id: '4', title: 'DSA Trees & Graphs Notes', type: 'Notes', rating: 4.7, downloads: 302 },
-        { id: '5', title: 'DSA Sorting Algorithms PYQ', type: 'PYQ', rating: 4.4, downloads: 156 },
-    ],
-    'Operating Systems': [
-        { id: '6', title: 'OS Process Scheduling Notes', type: 'Notes', rating: 4.6, downloads: 278 },
-        { id: '7', title: 'OS Memory Management PYQ 2025', type: 'PYQ', rating: 4.3, downloads: 201 },
-    ],
-    'Computer Networks': [
-        { id: '8', title: 'CN Unit 3 - Transport Layer', type: 'Notes', rating: 4.9, downloads: 312 },
-    ],
-    'Engineering Mathematics III': [
-        { id: '9', title: 'M3 Important Questions', type: 'PYQ', rating: 4.7, downloads: 445 },
-        { id: '10', title: 'M3 Full Notes - Laplace & Fourier', type: 'Notes', rating: 4.8, downloads: 320 },
-    ],
-};
 
 function getTypeIcon(type) {
     switch (type) {
@@ -51,15 +29,75 @@ function getTypeClass(type) {
 }
 
 export default function SubjectsPage() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
 
-    // Default to user's profile, fall back to manual selection
-    const [branch, setBranch] = useState(user?.branch || 'Computer');
-    const [year, setYear] = useState(user?.year || '2nd Year');
-    const [semester, setSemester] = useState(user?.semester || 'Sem 3');
+    const [branch, setBranch] = useState('Computer');
+    const [year, setYear] = useState('2nd Year');
+    const [semester, setSemester] = useState('Sem 3');
+    const [subjectContent, setSubjectContent] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [hasLoadedPrefs, setHasLoadedPrefs] = useState(false);
 
-    const availableSemesters = year ? (SEMESTERS[year] || []) : [];
+    useEffect(() => {
+        if (!authLoading && !hasLoadedPrefs) {
+            if (user) {
+                setBranch(user.branch || 'Computer');
+                setYear(user.year || '2nd Year');
+                setSemester(user.semester || 'Sem 3');
+            }
+            setHasLoadedPrefs(true);
+        }
+    }, [user, authLoading, hasLoadedPrefs]);
+
+    const availableSemesters = year && year !== 'All' ? (SEMESTERS[year] || []) : [];
     const subjects = getSubjects(branch, semester);
+
+    useEffect(() => {
+        let cancelled = false;
+        const fetchContent = async () => {
+            setLoading(true);
+            try {
+                if (!db) throw new Error('Firestore not initialized');
+                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000));
+                const fetchPromise = getDocs(collection(db, 'files'));
+                const snapshot = await Promise.race([fetchPromise, timeout]);
+                if (cancelled) return;
+                const allFiles = snapshot.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .filter(f => f.status === 'approved');
+                const grouped = {};
+                allFiles.forEach(file => {
+                    const subj = file.subject || 'Other';
+                    if (!grouped[subj]) grouped[subj] = [];
+                    grouped[subj].push(file);
+                });
+                setSubjectContent(grouped);
+            } catch (error) {
+                console.error('Error fetching subject content:', error);
+                if (!cancelled) setSubjectContent({});
+            }
+            if (!cancelled) setLoading(false);
+        };
+        fetchContent();
+        return () => { cancelled = true; };
+    }, []);
+
+    if (!user) {
+        return (
+            <div className={styles.pageWrapper}>
+                <div className={styles.pageInner}>
+                    <div style={{ textAlign: 'center', padding: 'var(--space-3xl)', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', maxWidth: '440px', margin: 'var(--space-3xl) auto', backdropFilter: 'blur(20px)' }}>
+                        <div style={{ color: 'var(--primary)', marginBottom: 'var(--space-lg)' }}><IconLock size={64} /></div>
+                        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>Sign in to Access</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-xl)' }}>You must be logged in to view Syllabus and Subject Content.</p>
+                        <Link href="/login" style={{ display: 'inline-block', padding: '12px 32px', background: 'var(--primary)', color: '#fff', borderRadius: 'var(--radius-full)', fontWeight: 700, textDecoration: 'none', transition: 'all 0.3s ease' }}>
+                            Go to Login
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.pageWrapper}>
@@ -71,7 +109,6 @@ export default function SubjectsPage() {
                     </div>
                 </ScrollReveal>
 
-                {/* Filters */}
                 <ScrollReveal delay={100}>
                     <div className={styles.filterBar}>
                         <select className={styles.filterSelect} value={branch} onChange={(e) => { setBranch(e.target.value); setSemester(''); }}>
@@ -87,11 +124,11 @@ export default function SubjectsPage() {
                     </div>
                 </ScrollReveal>
 
-                {/* Subject Grid */}
                 {subjects.length > 0 ? (
                     <div className={styles.subjectGrid}>
                         {subjects.map((subj, i) => {
-                            const content = SAMPLE_CONTENT[subj] || [];
+                            const content = subjectContent[subj] || [];
+                            const topContent = content.slice(0, 3);
                             return (
                                 <ScrollReveal key={subj} delay={i * 80}>
                                     <div className={`${styles.subjectCard} hover-lift`} style={{ animationDelay: `${i * 0.05}s` }}>
@@ -100,13 +137,13 @@ export default function SubjectsPage() {
                                             <h3 className={styles.subjectName}>{subj}</h3>
                                         </div>
 
-                                        {content.length > 0 ? (
+                                        {topContent.length > 0 ? (
                                             <div className={styles.contentList}>
-                                                {content.map(item => (
+                                                {topContent.map(item => (
                                                     <div key={item.id} className={styles.contentItem}>
                                                         <span className={`${styles.contentType} ${getTypeClass(item.type)}`}>{getTypeIcon(item.type)} {item.type}</span>
                                                         <span className={styles.contentTitle}>{item.title}</span>
-                                                        <span className={styles.contentRating}><IconStar size={12} /> {item.rating}</span>
+                                                        <span className={styles.contentRating}><IconStar size={12} /> {item.rating > 0 ? item.rating : 'New'}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -135,4 +172,3 @@ export default function SubjectsPage() {
         </div>
     );
 }
-

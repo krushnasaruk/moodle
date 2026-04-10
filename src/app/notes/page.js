@@ -2,41 +2,67 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import Link from 'next/link';
+import { collection, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 import { ScrollReveal } from '@/components/Animations';
 import styles from './page.module.css';
-import { IconNotes, IconUser, IconFolder, IconHat, IconDownload, IconStar, IconHeart, IconSearch } from '@/components/Icons';
+import { IconNotes, IconUser, IconFolder, IconHat, IconDownload, IconStar, IconHeart, IconSearch, IconFlag, IconLock } from '@/components/Icons';
 
 const BRANCHES = ['All', 'Computer', 'IT', 'Mechanical', 'Civil', 'Electrical', 'Electronics'];
 const YEARS = ['All', '1st Year', '2nd Year', '3rd Year', '4th Year'];
-const SUBJECTS_MAP = {
-    'Computer': ['DBMS', 'OS', 'DSA', 'CN', 'SE', 'TOC', 'AI', 'ML'],
-    'IT': ['DBMS', 'OS', 'Web Tech', 'CN', 'Cloud Computing'],
-    'All': ['Mathematics', 'Physics', 'Chemistry', 'English'],
-};
-
-// Sample data for demo (will be replaced by Firebase data)
-const SAMPLE_NOTES = [
-    { id: '1', title: 'DBMS Complete Notes - Unit 1 to 5', subject: 'DBMS', branch: 'Computer', year: '2nd Year', uploader: 'Rahul S.', rating: 4.8, downloads: 234, createdAt: '2026-04-05' },
-    { id: '2', title: 'Operating Systems Process Scheduling', subject: 'OS', branch: 'Computer', year: '2nd Year', uploader: 'Priya K.', rating: 4.5, downloads: 189, createdAt: '2026-04-04' },
-    { id: '3', title: 'Data Structures - Trees & Graphs', subject: 'DSA', branch: 'Computer', year: '2nd Year', uploader: 'Amit R.', rating: 4.7, downloads: 302, createdAt: '2026-04-03' },
-    { id: '4', title: 'Computer Networks - Unit 3 Detailed', subject: 'CN', branch: 'Computer', year: '3rd Year', uploader: 'Neha M.', rating: 4.9, downloads: 312, createdAt: '2026-04-02' },
-    { id: '5', title: 'Software Engineering Design Patterns', subject: 'SE', branch: 'Computer', year: '3rd Year', uploader: 'Vikram T.', rating: 4.6, downloads: 178, createdAt: '2026-04-01' },
-    { id: '6', title: 'Theory of Computation - Regular Languages', subject: 'TOC', branch: 'Computer', year: '3rd Year', uploader: 'Sara J.', rating: 4.4, downloads: 145, createdAt: '2026-03-30' },
-    { id: '7', title: 'Engineering Mathematics III', subject: 'Mathematics', branch: 'All', year: '2nd Year', uploader: 'Karan P.', rating: 4.8, downloads: 445, createdAt: '2026-03-28' },
-    { id: '8', title: 'Machine Learning Basics', subject: 'ML', branch: 'Computer', year: '4th Year', uploader: 'Ankit D.', rating: 4.3, downloads: 167, createdAt: '2026-03-25' },
-];
 
 function NotesContent() {
     const searchParams = useSearchParams();
     const urlQuery = searchParams.get('q') || '';
+    const { user, loading: authLoading } = useAuth();
 
-    const [notes, setNotes] = useState(SAMPLE_NOTES);
+    const [notes, setNotes] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [branch, setBranch] = useState('All');
     const [year, setYear] = useState('All');
     const [search, setSearch] = useState(urlQuery);
     const [liked, setLiked] = useState({});
+
+    // Fetch approved Notes from Firestore
+    useEffect(() => {
+        let cancelled = false;
+        const fetchNotes = async () => {
+            setLoading(true);
+            try {
+                if (!db) throw new Error('Firestore not initialized');
+
+                // Use simple getDocs on the whole collection to avoid composite index requirement
+                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000));
+                const fetchPromise = getDocs(collection(db, 'files'));
+                const snapshot = await Promise.race([fetchPromise, timeout]);
+
+                if (cancelled) return;
+
+                const data = snapshot.docs
+                    .map(d => ({ id: d.id, ...d.data() }))
+                    .filter(f => f.type === 'Notes' && f.status === 'approved');
+                data.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+                setNotes(data);
+            } catch (error) {
+                console.error('Error fetching notes:', error);
+                if (!cancelled) setNotes([]);
+            }
+            if (!cancelled) setLoading(false);
+        };
+        fetchNotes();
+        return () => { cancelled = true; };
+    }, []);
+
+    // Load saved liked state from user if available
+    useEffect(() => {
+        if (user?.savedNotes) {
+            const likedMap = {};
+            user.savedNotes.forEach(id => { likedMap[id] = true; });
+            setLiked(likedMap);
+        }
+    }, [user]);
 
     const filtered = notes.filter((n) => {
         if (branch !== 'All' && n.branch !== branch && n.branch !== 'All') return false;
@@ -45,9 +71,55 @@ function NotesContent() {
         return true;
     });
 
-    const toggleLike = (id) => {
+    const toggleLike = async (id) => {
         setLiked(prev => ({ ...prev, [id]: !prev[id] }));
+        if (user && db) {
+            try {
+                const userRef = doc(db, 'users', user.uid);
+                const currentSaved = user.savedNotes || [];
+                const newSaved = currentSaved.includes(id)
+                    ? currentSaved.filter(sid => sid !== id)
+                    : [...currentSaved, id];
+                await updateDoc(userRef, { savedNotes: newSaved });
+            } catch (e) {
+                console.warn('Could not save like:', e.message);
+            }
+        }
     };
+
+    const handleDownload = async (note) => {
+        if (!note.fileURL) return;
+        try {
+            await updateDoc(doc(db, 'files', note.id), {
+                downloads: increment(1)
+            });
+            setNotes(prev => prev.map(n => n.id === note.id ? { ...n, downloads: (n.downloads || 0) + 1 } : n));
+        } catch (e) {
+            console.warn('Could not update download count:', e.message);
+        }
+        window.open(note.fileURL, '_blank');
+    };
+
+    if (authLoading) {
+        return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Authenticating...</div>;
+    }
+
+    if (!user) {
+        return (
+            <div className={styles.pageWrapper}>
+                <div className={styles.pageInner}>
+                    <div style={{ textAlign: 'center', padding: 'var(--space-3xl)', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', maxWidth: '440px', margin: 'var(--space-3xl) auto', backdropFilter: 'blur(20px)' }}>
+                        <div style={{ color: 'var(--primary)', marginBottom: 'var(--space-lg)' }}><IconLock size={64} /></div>
+                        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>Sign in to Access</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-xl)' }}>You must be logged in to explore the Notes library.</p>
+                        <Link href="/login" style={{ display: 'inline-block', padding: '12px 32px', background: 'var(--primary)', color: '#fff', borderRadius: 'var(--radius-full)', fontWeight: 700, textDecoration: 'none', transition: 'all 0.3s ease' }}>
+                            Go to Login
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.pageWrapper}>
@@ -79,43 +151,49 @@ function NotesContent() {
                     </div>
                 </ScrollReveal>
 
-                {filtered.length === 0 ? (
+                {loading ? (
+                    <div className={styles.emptyState}>
+                        <div className={styles.emptyText}>Loading notes...</div>
+                    </div>
+                ) : filtered.length === 0 ? (
                     <div className={styles.emptyState}>
                         <div className={styles.emptyIcon}><IconSearch size={64} /></div>
                         <div className={styles.emptyText}>No notes found</div>
-                        <div className={styles.emptySubtext}>Try adjusting your filters or search query</div>
+                        <div className={styles.emptySubtext}>{notes.length === 0 ? 'No approved notes yet. Be the first to upload!' : 'Try adjusting your filters or search query'}</div>
                     </div>
                 ) : (
                     <div className={styles.listContainer}>
                         {filtered.map((note, i) => (
                             <ScrollReveal key={note.id} delay={i * 80}>
                                 <div className={`${styles.rowCard} hover-lift`}>
-                                    <div className={styles.cardIconArea}>
-                                        <IconNotes size={32} className={styles.fileIcon} />
-                                        <span className={`${styles.cardBadge} ${styles.badgeNotes}`}>Notes</span>
+                                    <div className={styles.cardHeader}>
+                                        <div className={styles.cardIconArea}>
+                                            <IconNotes size={24} className={styles.fileIcon} />
+                                            <span className={`${styles.cardBadge} ${styles.badgeNotes}`}>Notes</span>
+                                        </div>
+                                        <div className={styles.rating}><IconStar size={16} /> {note.rating > 0 ? note.rating : 'New'}</div>
                                     </div>
 
                                     <div className={styles.cardMain}>
                                         <h3 className={styles.cardTitle}>{note.title}</h3>
                                         <div className={styles.cardMeta}>
-                                            <span className={styles.metaItem}><IconUser /> <strong>{note.uploader}</strong></span>
-                                            <span className={styles.metaItem}><IconFolder /> {note.subject}</span>
-                                            <span className={styles.metaItem}><IconHat /> {note.year}</span>
-                                            <span className={styles.metaItem}><IconDownload /> {note.downloads} dls</span>
+                                            <span className={styles.metaItem}><IconUser size={14}/> <strong>{note.uploader}</strong></span>
+                                            <span className={styles.metaItem}><IconFolder size={14}/> {note.subject}</span>
+                                            <span className={styles.metaItem}><IconHat size={14}/> {note.year}</span>
+                                            <span className={styles.metaItem}><IconDownload size={14}/> {note.downloads || 0}</span>
                                         </div>
                                     </div>
 
                                     <div className={styles.cardActions}>
-                                        <div className={styles.rating}><IconStar /> {note.rating}</div>
                                         <div className={styles.actionRow}>
                                             <button
                                                 className={styles.likeBtn}
                                                 onClick={() => toggleLike(note.id)}
-                                                title="Like this note"
+                                                title="Save this note"
                                             >
-                                                <IconHeart fill={liked[note.id] ? "#ef4444" : "none"} stroke={liked[note.id] ? "#ef4444" : "currentColor"} />
+                                                <IconHeart size={18} fill={liked[note.id] ? "#ef4444" : "none"} stroke={liked[note.id] ? "#ef4444" : "currentColor"} />
                                             </button>
-                                            <button className={styles.downloadBtn}>
+                                            <button className={styles.downloadBtn} onClick={() => handleDownload(note)}>
                                                 <IconDownload size={18} /> Download
                                             </button>
                                         </div>

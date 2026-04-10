@@ -25,7 +25,10 @@ export default function UploadPage() {
     const [year, setYear] = useState(user?.year || '');
     const [description, setDescription] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadStage, setUploadStage] = useState('');
     const [success, setSuccess] = useState(false);
+    const [error, setError] = useState('');
     const [dragActive, setDragActive] = useState(false);
 
     const handleDrag = (e) => {
@@ -41,12 +44,14 @@ export default function UploadPage() {
         setDragActive(false);
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             setFile(e.dataTransfer.files[0]);
+            setError('');
         }
     };
 
     const handleFileSelect = (e) => {
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
+            setError('');
         }
     };
 
@@ -60,49 +65,103 @@ export default function UploadPage() {
         e.preventDefault();
         if (!file || !title || !subject || !type || !branch || !year) return;
 
+        if (file.size > 50 * 1024 * 1024) {
+            setError('File size must be under 50MB.');
+            return;
+        }
+
         setUploading(true);
+        setUploadProgress(0);
+        setUploadStage('Initiating upload...');
+        setError('');
+
+        // Provide a smooth fake progress up to 90% while the background tasks complete
+        let simulatedProgress = 0;
+        const progressInterval = setInterval(() => {
+            simulatedProgress += Math.floor(Math.random() * 5) + 2;
+            if (simulatedProgress > 90) simulatedProgress = 90;
+            setUploadProgress(simulatedProgress);
+            setUploadStage(`Uploading file... ${simulatedProgress}%`);
+        }, 300);
+
         try {
-            // Upload file to Firebase Storage
-            const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
-            const uploadTask = uploadBytesResumable(storageRef, file);
+            if (!storage || !db) throw new Error("Firebase is not initialized. Please check network connection.");
 
-            uploadTask.on('state_changed', null, (error) => {
-                console.error('Upload error:', error);
-                setUploading(false);
-            }, async () => {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            // 1. Upload to Next.js Local Storage API
+            const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Upload to our local API route instead of Google Cloud
+            const uploadResponse = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
 
-                // Add document to Firestore
-                await addDoc(collection(db, 'files'), {
-                    title,
-                    subject,
-                    type,
-                    branch,
-                    year,
-                    description,
-                    fileURL: downloadURL,
-                    fileName: file.name,
-                    fileSize: file.size,
-                    uploader: user.name,
-                    uploaderUID: user.uid,
-                    rating: 0,
-                    ratingCount: 0,
-                    downloads: 0,
-                    createdAt: new Date().toISOString(),
-                });
+            if (!uploadResponse.ok) {
+                const errorData = await uploadResponse.json();
+                throw new Error(errorData.error || "Failed to upload file to local server");
+            }
 
-                // Update user stats
+            const uploadData = await uploadResponse.json();
+            const downloadURL = uploadData.url;
+            
+            clearInterval(progressInterval);
+
+            setUploadProgress(95);
+            setUploadStage('Saving metadata...');
+
+            // 3. Save to Firestore (Adding a timeout so it doesn't hang forever if offline)
+            const saveDocPromise = addDoc(collection(db, 'files'), {
+                title,
+                subject,
+                type,
+                branch,
+                year,
+                description,
+                fileURL: downloadURL,
+                fileName: safeName,
+                fileSize: file.size,
+                uploader: user.name,
+                uploaderUID: user.uid,
+                uploaderEmail: user.email,
+                rating: 0,
+                ratingCount: 0,
+                downloads: 0,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+            });
+
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Database connection timeout. The file is uploaded but details failed to save.")), 10000)
+            );
+
+            await Promise.race([saveDocPromise, timeoutPromise]);
+
+            setUploadProgress(99);
+            setUploadStage('Updating your profile...');
+
+            // 4. Update Profile
+            try {
+                // Enhanced Point System: Rewards 50 Points for a contribution
                 await updateDoc(doc(db, 'users', user.uid), {
                     uploads: increment(1),
-                    points: increment(10),
+                    points: increment(50),
                 });
+            } catch(e) {
+                console.warn('Non-critical: Failed to update user profile stats', e);
+            }
 
-                setSuccess(true);
-                setUploading(false);
-            });
-        } catch (error) {
-            console.error('Error:', error);
+            setUploadProgress(100);
+            setSuccess(true);
             setUploading(false);
+            setUploadStage('');
+        } catch (error) {
+            clearInterval(progressInterval);
+            console.error('Final Upload error:', error);
+            setError(error.message || 'Something went wrong. Please try again.');
+            setUploading(false);
+            setUploadStage('');
         }
     };
 
@@ -130,7 +189,13 @@ export default function UploadPage() {
                     <div className={styles.successMsg}>
                         <div className={styles.successIcon}><IconSparkles size={64} style={{ stroke: "var(--primary)" }} /></div>
                         <h2 className={styles.successTitle}>Upload Successful!</h2>
-                        <p className={styles.successText}>Your file has been shared. You earned 10 points!</p>
+                        <p className={styles.successText}>
+                            Your file has been submitted for review. You earned <strong>10 points!</strong>
+                            <br /><br />
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                ⏳ An admin will review your upload shortly. You can check the status on your <Link href="/dashboard" style={{ color: 'var(--primary)' }}>Dashboard</Link>.
+                            </span>
+                        </p>
                         <button
                             className={styles.submitBtn}
                             onClick={() => {
@@ -142,6 +207,7 @@ export default function UploadPage() {
                                 setBranch('');
                                 setYear('');
                                 setDescription('');
+                                setUploadProgress(0);
                             }}
                             style={{ maxWidth: '300px' }}
                         >
@@ -163,6 +229,13 @@ export default function UploadPage() {
 
                 <div className={styles.formCard}>
                     <form className={styles.form} onSubmit={handleSubmit}>
+                        {/* Error */}
+                        {error && (
+                            <div className={styles.errorMsg}>
+                                ⚠️ {error}
+                            </div>
+                        )}
+
                         {/* File Drop Zone */}
                         <div className={styles.formGroup}>
                             <label className={styles.label}>File *</label>
@@ -255,8 +328,18 @@ export default function UploadPage() {
                             />
                         </div>
 
+                        {/* Progress Bar */}
+                        {uploading && (
+                            <div className={styles.progressArea}>
+                                <div className={styles.progressBarBg}>
+                                    <div className={styles.progressBarFill} style={{ width: `${uploadProgress}%` }}></div>
+                                </div>
+                                <div className={styles.progressText}>{uploadStage}</div>
+                            </div>
+                        )}
+
                         <button type="submit" className={styles.submitBtn} disabled={uploading || !file || !title || !subject || !type || !branch || !year}>
-                            {uploading ? '⏳ Uploading...' : <><IconUpload size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Upload File</>}
+                            {uploading ? `⏳ ${uploadStage}` : <><IconUpload size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> Upload File</>}
                         </button>
                     </form>
                 </div>

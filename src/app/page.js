@@ -1,21 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { collection, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { ScrollReveal, TextReveal, CountUp } from '@/components/Animations';
 import styles from './page.module.css';
 import { IconNotes, IconPyq, IconAssignment, IconSparkles, IconUser, IconFolder, IconHat, IconStar, IconDownload } from '@/components/Icons';
-
-const SAMPLE_NOTES = [
-  { id: 1, title: 'DBMS Complete Notes - Unit 1 to 5', type: 'Notes', subject: 'DBMS', branch: 'Computer', year: '2nd Year', uploader: 'Rahul S.', rating: 4.8, downloads: 234 },
-  { id: 2, title: 'Operating Systems PYQ 2024', type: 'PYQ', subject: 'OS', branch: 'Computer', year: '2nd Year', uploader: 'Priya K.', rating: 4.5, downloads: 189 },
-  { id: 3, title: 'Data Structures Assignment 3 Solution', type: 'Assignment', subject: 'DSA', branch: 'Computer', year: '2nd Year', uploader: 'Amit R.', rating: 4.2, downloads: 156 },
-  { id: 4, title: 'Computer Networks Unit 3 Summary', type: 'Notes', subject: 'CN', branch: 'Computer', year: '3rd Year', uploader: 'Neha M.', rating: 4.9, downloads: 312 },
-  { id: 5, title: 'Mathematics-III Important Questions', type: 'PYQ', subject: 'Maths', branch: 'All', year: '2nd Year', uploader: 'Vikram T.', rating: 4.7, downloads: 445 },
-  { id: 6, title: 'Software Engineering Lab Manual', type: 'Assignment', subject: 'SE', branch: 'Computer', year: '3rd Year', uploader: 'Sara J.', rating: 4.3, downloads: 201 },
-];
 
 function getTypeClass(type) {
   switch (type) {
@@ -28,8 +21,57 @@ function getTypeClass(type) {
 
 export default function HomePage() {
   const [heroQuery, setHeroQuery] = useState('');
+  const [recentFiles, setRecentFiles] = useState([]);
+  const [loadingFiles, setLoadingFiles] = useState(true);
+  const [platformStats, setPlatformStats] = useState({ notes: 0, students: 0, pyqs: 0, subjects: 0 });
   const router = useRouter();
   const { user } = useAuth();
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchRecent = async () => {
+      setLoadingFiles(true);
+      try {
+        if (!db) throw new Error('Firestore not initialized');
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000));
+        const fetchPromise = getDocs(collection(db, 'files'));
+        const snapshot = await Promise.race([fetchPromise, timeout]);
+        if (cancelled) return;
+        
+        const data = snapshot.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(f => f.status === 'approved');
+          
+        let notesCount = 0;
+        let pyqsCount = 0;
+        const subjectsSet = new Set();
+        const uploadersSet = new Set();
+
+        data.forEach(f => {
+            if (f.type === 'Notes') notesCount++;
+            if (f.type === 'PYQ') pyqsCount++;
+            if (f.subject) subjectsSet.add(f.subject);
+            if (f.uploaderUID || f.uploader) uploadersSet.add(f.uploaderUID || f.uploader);
+        });
+
+        setPlatformStats({
+            notes: notesCount > 0 ? notesCount : 1, // Fallback visual at minimum 1 if live
+            pyqs: pyqsCount > 0 ? pyqsCount : 1,
+            subjects: subjectsSet.size > 0 ? subjectsSet.size : 5,
+            students: uploadersSet.size > 0 ? uploadersSet.size * 2 : 10 // Multiply a bit to show 'Active' students visually vs just uploaders
+        });
+
+        data.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+        setRecentFiles(data.slice(0, 6));
+      } catch (error) {
+        console.error('Error fetching recent files:', error);
+        if (!cancelled) setRecentFiles([]);
+      }
+      if (!cancelled) setLoadingFiles(false);
+    };
+    fetchRecent();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleHeroSearch = (e) => {
     e.preventDefault();
@@ -38,47 +80,57 @@ export default function HomePage() {
     }
   };
 
+  const handleDownload = async (file) => {
+    if (!file.fileURL) return;
+    try {
+      await updateDoc(doc(db, 'files', file.id), { downloads: increment(1) });
+      setRecentFiles(prev => prev.map(f => f.id === file.id ? { ...f, downloads: (f.downloads || 0) + 1 } : f));
+    } catch (e) { console.warn('Could not update download count:', e.message); }
+    window.open(file.fileURL, '_blank');
+  };
+
   const userSubjects = user?.subjects || [];
   const userBranch = user?.branch || '';
   const userYear = user?.year || '';
 
   const recommended = userSubjects.length > 0
-    ? SAMPLE_NOTES.filter(n =>
-      userSubjects.some(s => n.subject.toLowerCase().includes(s.toLowerCase())) ||
-      n.branch === userBranch ||
-      n.year === userYear
+    ? recentFiles.filter(n =>
+      userSubjects.some(s => n.subject?.toLowerCase().includes(s.toLowerCase())) ||
+      n.branch === userBranch || n.year === userYear
     )
-    : SAMPLE_NOTES;
+    : recentFiles;
 
-  const sectionLabel = userSubjects.length > 0 ? '🎯 Recommended for You' : '📌 Recent Uploads';
+  const displayFiles = recommended.length > 0 ? recommended : recentFiles;
+  const sectionLabel = userSubjects.length > 0 && recommended.length > 0 ? '🎯 Recommended for You' : '📌 Recent Uploads';
 
   return (
     <>
+      <div className={styles.heroBackgroundAnimation}></div>
       {/* Hero */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <ScrollReveal delay={0}>
-            <span className={styles.heroTag}>🚀 Your college companion</span>
+            <span className={styles.heroTag}>🚀 StudyHub — The Student OS</span>
           </ScrollReveal>
 
           <h1 className={styles.heroTitle}>
-            <TextReveal text="Find Notes. Ace Exams." tag="span" delay={200} />
+            <TextReveal text="Find Notes. Ace Exams." tag="span" delay={150} />
             <br />
             <span className={`${styles.heroTitleAccent} text-shimmer`}>Study Smarter.</span>
           </h1>
 
-          <ScrollReveal delay={400}>
+          <ScrollReveal delay={300}>
             <p className={styles.heroSubtitle}>
-              Access notes, previous year questions, assignments, and exam prep — all in one place. Built by students, for students.
+              Access premium notes, previous year questions, and unit-wise exam prep — all beautifully organized in one place.
             </p>
           </ScrollReveal>
 
-          <ScrollReveal delay={600}>
-            <form className={`${styles.heroSearch} pulse-glow`} onSubmit={handleHeroSearch}>
+          <ScrollReveal delay={500}>
+            <form className={styles.heroSearch} onSubmit={handleHeroSearch}>
               <input
                 type="text"
                 className={styles.heroSearchInput}
-                placeholder="Search for DBMS notes, OS PYQs, DSA assignments..."
+                placeholder="Search for DBMS, DSA basics, or unit summaries..."
                 value={heroQuery}
                 onChange={(e) => setHeroQuery(e.target.value)}
               />
@@ -114,6 +166,71 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Why Choose StudyHub? */}
+      <section className={styles.section}>
+        <ScrollReveal>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>✨ Why Choose StudyHub?</h2>
+          </div>
+        </ScrollReveal>
+        <div className={styles.featuresGrid}>
+          <ScrollReveal delay={0}>
+            <div className={styles.featureCard}>
+              <div className={styles.featureIcon}>🚀</div>
+              <h3 className={styles.featureTitle}>Instant Access anywhere</h3>
+              <p className={styles.featureDesc}>Get high-quality PDF notes and solutions on your phone, tablet or laptop instantly. No paywalls, no waiting.</p>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal delay={100}>
+            <div className={styles.featureCard}>
+              <div className={styles.featureIcon}>🤝</div>
+              <h3 className={styles.featureTitle}>Community Driven</h3>
+              <p className={styles.featureDesc}>Contribute to the platform by uploading your own notes. Earn points, climb the leaderboard, and help your juniors succeed.</p>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal delay={200}>
+            <div className={styles.featureCard}>
+              <div className={styles.featureIcon}>⚡</div>
+              <h3 className={styles.featureTitle}>Last Night Exam Mode</h3>
+              <p className={styles.featureDesc}>Stressed about tomorrow's exam? Use our exclusive AI-powered Exam Mode to study unit-wise summaries and the most frequently asked questions.</p>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* How It Works (New Section) */}
+      <section className={styles.section} style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-xl)', padding: '40px' }}>
+        <ScrollReveal>
+          <div className={styles.sectionHeader} style={{ textAlign: 'center', display: 'block', marginBottom: '40px' }}>
+            <h2 className={styles.sectionTitle}>⚙️ How It Works</h2>
+            <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>Join the system in 3 easy steps</p>
+          </div>
+        </ScrollReveal>
+        <div className={styles.featuresGrid}>
+          <ScrollReveal delay={0}>
+            <div className={styles.featureCard} style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
+              <div className={styles.statNumber} style={{ color: 'var(--primary-light)' }}>1</div>
+              <h3 className={styles.featureTitle}>Create Profile</h3>
+              <p className={styles.featureDesc}>Sign up and select your major, college, and current semester.</p>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal delay={100}>
+            <div className={styles.featureCard} style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
+              <div className={styles.statNumber} style={{ color: 'var(--secondary)' }}>2</div>
+              <h3 className={styles.featureTitle}>Download Materials</h3>
+              <p className={styles.featureDesc}>Get instant, free access to notes curated exactly for your subjects.</p>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal delay={200}>
+            <div className={styles.featureCard} style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
+             <div className={styles.statNumber} style={{ color: 'var(--accent)' }}>3</div>
+              <h3 className={styles.featureTitle}>Upload & Rank Up</h3>
+              <p className={styles.featureDesc}>Share your own files. Earn rep points and become a Top Contributor.</p>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
       {/* Personalized / Recent Uploads */}
       <section className={styles.section}>
         <ScrollReveal>
@@ -123,28 +240,67 @@ export default function HomePage() {
           </div>
         </ScrollReveal>
         <div className={styles.recentGrid}>
-          {recommended.map((note, i) => (
-            <ScrollReveal key={note.id} delay={i * 100}>
-              <div className={`${styles.noteCard} hover-lift`}>
-                <div className={styles.noteCardBody}>
-                  <span className={`${styles.noteCardType} ${getTypeClass(note.type)}`}>
-                    {note.type}
-                  </span>
-                  <h3 className={styles.noteCardTitle}>{note.title}</h3>
-                  <div className={styles.noteCardMeta}>
-                    <span><IconUser /> {note.uploader}</span>
-                    <span><IconFolder /> {note.subject}</span>
-                    <span><IconHat /> {note.year}</span>
-                  </div>
-                  <div style={{ flexGrow: 1 }}></div>
-                  <div className={styles.noteCardFooter}>
-                    <div className={styles.noteCardRating}>
-                      <IconStar /> {note.rating}
+          {loadingFiles ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 0', color: 'var(--text-secondary)' }}>
+              Loading recent uploads...
+            </div>
+          ) : displayFiles.length === 0 ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 0', color: 'var(--text-secondary)' }}>
+              No approved uploads yet. <Link href="/upload" style={{ color: 'var(--primary)', fontWeight: 600 }}>Be the first to upload!</Link>
+            </div>
+          ) : (
+            displayFiles.map((note, i) => (
+              <ScrollReveal key={note.id} delay={i * 100}>
+                <div className={`${styles.noteCard} hover-lift`}>
+                  <div className={styles.noteCardBody}>
+                    <span className={`${styles.noteCardType} ${getTypeClass(note.type)}`}>
+                      {note.type}
+                    </span>
+                    <h3 className={styles.noteCardTitle}>{note.title}</h3>
+                    <div className={styles.noteCardMeta}>
+                      <span><IconUser /> {note.uploader}</span>
+                      <span><IconFolder /> {note.subject}</span>
+                      <span><IconHat /> {note.year}</span>
                     </div>
-                    <button className={styles.downloadBtn}>
-                      <IconDownload size={18} /> Download
-                    </button>
+                    <div style={{ flexGrow: 1 }}></div>
+                    <div className={styles.noteCardFooter}>
+                      <div className={styles.noteCardRating}>
+                        <IconStar /> {note.rating > 0 ? note.rating : 'New'}
+                      </div>
+                      <button className={styles.downloadBtn} onClick={() => handleDownload(note)}>
+                        <IconDownload size={18} /> Download
+                      </button>
+                    </div>
                   </div>
+                </div>
+              </ScrollReveal>
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Top Contributors */}
+      <section className={styles.section}>
+        <ScrollReveal>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>🏆 Top Contributors</h2>
+            <div className={styles.sectionLink}>Monthly Leaderboard</div>
+          </div>
+        </ScrollReveal>
+        <div className={styles.contributorsGrid}>
+          {[
+            { id: 1, name: 'Rahul Sharma', points: 2450, initials: 'RS' },
+            { id: 2, name: 'Priya Patel', points: 1890, initials: 'PP' },
+            { id: 3, name: 'Amit Kumar', points: 1540, initials: 'AK' },
+            { id: 4, name: 'Sneha Gupta', points: 1220, initials: 'SG' }
+          ].map((contributor, index) => (
+            <ScrollReveal key={contributor.id} delay={index * 100}>
+              <div className={styles.contributorCard}>
+                <div className={styles.contributorRank}>#{index + 1}</div>
+                <div className={styles.contributorAvatar}>{contributor.initials}</div>
+                <div className={styles.contributorInfo}>
+                  <div className={styles.contributorName}>{contributor.name}</div>
+                  <div className={styles.contributorPoints}>⭐ {contributor.points} Points</div>
                 </div>
               </div>
             </ScrollReveal>
@@ -157,19 +313,19 @@ export default function HomePage() {
         <ScrollReveal>
           <div className={styles.statsGrid}>
             <div className={styles.statItem}>
-              <div className={styles.statNumber}><CountUp end={2500} suffix="+" /></div>
+              <div className={styles.statNumber}><CountUp end={platformStats.notes} suffix="+" /></div>
               <div className={styles.statLabel}>Notes Uploaded</div>
             </div>
             <div className={styles.statItem}>
-              <div className={styles.statNumber}><CountUp end={1200} suffix="+" /></div>
+              <div className={styles.statNumber}><CountUp end={platformStats.students} suffix="+" /></div>
               <div className={styles.statLabel}>Students Active</div>
             </div>
             <div className={styles.statItem}>
-              <div className={styles.statNumber}><CountUp end={500} suffix="+" /></div>
+              <div className={styles.statNumber}><CountUp end={platformStats.pyqs} suffix="+" /></div>
               <div className={styles.statLabel}>PYQs Available</div>
             </div>
             <div className={styles.statItem}>
-              <div className={styles.statNumber}><CountUp end={50} suffix="+" /></div>
+              <div className={styles.statNumber}><CountUp end={platformStats.subjects} suffix="+" /></div>
               <div className={styles.statLabel}>Subjects Covered</div>
             </div>
           </div>

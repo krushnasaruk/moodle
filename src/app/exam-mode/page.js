@@ -1,92 +1,96 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import { ScrollReveal } from '@/components/Animations';
 import styles from './page.module.css';
-import { IconSparkles, IconLightbulb, IconClipboard, IconStar } from '@/components/Icons';
+import { IconSparkles, IconLightbulb, IconClipboard, IconStar, IconLock } from '@/components/Icons';
 
-const SUBJECTS = ['DBMS', 'OS', 'DSA', 'CN', 'SE'];
-
-const SUMMARIES = {
-    'DBMS': [
-        { unit: 'Unit 1', title: 'Introduction & ER Model', points: ['DBMS vs File System', 'ER Diagram components', 'Entities, Attributes, Relationships', 'Mapping cardinalities', 'Keys: Primary, Candidate, Super, Foreign'] },
-        { unit: 'Unit 2', title: 'Relational Model & SQL', points: ['Relational algebra operations', 'SQL DDL, DML, DCL', 'Joins: Inner, Outer, Cross, Self', 'Aggregate functions and GROUP BY', 'Subqueries and nested queries'] },
-        { unit: 'Unit 3', title: 'Normalization', points: ['Functional dependencies', '1NF, 2NF, 3NF, BCNF', 'Decomposition: Lossless join', 'Dependency preservation', 'Canonical cover'] },
-        { unit: 'Unit 4', title: 'Transactions & Concurrency', points: ['ACID properties', 'Serializability: Conflict & View', 'Two-Phase Locking (2PL)', 'Deadlock detection and prevention', 'Timestamp-based protocols'] },
-        { unit: 'Unit 5', title: 'Indexing & File Organization', points: ['Primary, Secondary, Dense, Sparse indexing', 'B-tree and B+ tree', 'Hashing: Static and Dynamic', 'RAID levels', 'Query optimization basics'] },
-    ],
-    'OS': [
-        { unit: 'Unit 1', title: 'OS Basics & Process', points: ['Types of OS: Batch, Multiprogramming, Time-Sharing', 'Process states & PCB', 'System calls', 'Threads: User vs Kernel', 'Context switching'] },
-        { unit: 'Unit 2', title: 'CPU Scheduling', points: ['FCFS, SJF, SRTF, Round Robin, Priority', 'Gantt chart problems', 'Avg waiting & turnaround time', 'Multilevel Queue Scheduling', 'Multilevel Feedback Queue'] },
-        { unit: 'Unit 3', title: 'Deadlocks & Synchronization', points: ['Deadlock conditions', 'Bankers Algorithm', 'Resource Allocation Graph', 'Mutex, Semaphore, Monitor', 'Producer-Consumer, Readers-Writers'] },
-        { unit: 'Unit 4', title: 'Memory Management', points: ['Paging and Segmentation', 'Page replacement: FIFO, LRU, Optimal', 'TLB and page tables', 'Virtual memory concepts', 'Thrashing and Working Set'] },
-    ],
-    'DSA': [
-        { unit: 'Unit 1', title: 'Arrays & Linked Lists', points: ['Time complexity: O(1), O(n), O(log n)', 'Singly, Doubly, Circular linked lists', 'Stack using array and linked list', 'Queue: Simple, Circular, Priority', 'Applications of Stack and Queue'] },
-        { unit: 'Unit 2', title: 'Trees', points: ['Binary Tree traversals: Inorder, Preorder, Postorder', 'BST operations: Insert, Delete, Search', 'AVL tree rotations', 'Heap: Min and Max heap', 'Huffman coding'] },
-        { unit: 'Unit 3', title: 'Graphs', points: ['BFS and DFS traversals', 'Dijkstra, Bellman-Ford shortest path', 'Prims and Kruskals MST', 'Topological sorting', 'Cycle detection in directed/undirected'] },
-        { unit: 'Unit 4', title: 'Sorting & Searching', points: ['Comparison-based: Merge, Quick, Heap sort', 'Linear sorts: Counting, Radix', 'Binary Search variations', 'Hashing and collision resolution', 'Time complexity comparison table'] },
-    ],
-    'CN': [
-        { unit: 'Unit 1', title: 'Network Models', points: ['OSI 7-layer model', 'TCP/IP model', 'Comparison of OSI vs TCP/IP', 'Network topologies', 'Switching: Circuit, Packet, Message'] },
-        { unit: 'Unit 2', title: 'Data Link Layer', points: ['Framing, Error Detection, Error Correction', 'Hamming code, CRC', 'Flow Control: Stop-and-Wait, Sliding Window', 'MAC protocols: ALOHA, CSMA/CD, CSMA/CA', 'Ethernet and IEEE 802.3'] },
-        { unit: 'Unit 3', title: 'Network Layer', points: ['IPv4 addressing and subnetting', 'CIDR and VLSM', 'Routing: RIP, OSPF, BGP', 'NAT and DHCP', 'IPv6 basics'] },
-    ],
-    'SE': [
-        { unit: 'Unit 1', title: 'SDLC Models', points: ['Waterfall, Spiral, Agile, V-model', 'Agile vs Waterfall comparison', 'Scrum framework', 'Requirements engineering process', 'Feasibility study types'] },
-        { unit: 'Unit 2', title: 'Design & UML', points: ['Class, Use case, Sequence diagrams', 'Activity and State diagrams', 'Coupling and Cohesion', 'Design patterns: Singleton, Factory, Observer', 'Component-based design'] },
-        { unit: 'Unit 3', title: 'Testing', points: ['Black box vs White box testing', 'Unit, Integration, System, Acceptance', 'Test case design techniques', 'Regression testing', 'Software metrics: LOC, Function Point'] },
-    ],
-};
-
-const IMP_QUESTIONS = {
-    'DBMS': [
-        { q: 'Explain the different types of keys in DBMS with examples.', marks: '5 marks' },
-        { q: 'What is normalization? Explain 1NF, 2NF, 3NF, and BCNF with examples.', marks: '10 marks' },
-        { q: 'Explain ACID properties of transactions.', marks: '5 marks' },
-        { q: 'Write SQL queries for JOIN operations with examples.', marks: '10 marks' },
-        { q: 'Explain B-tree and B+ tree with insertion examples.', marks: '10 marks' },
-        { q: 'What is deadlock in DBMS? Explain prevention methods.', marks: '5 marks' },
-        { q: 'Describe the two-phase locking protocol.', marks: '5 marks' },
-        { q: 'Explain relational algebra with examples.', marks: '10 marks' },
-    ],
-    'OS': [
-        { q: 'Explain Bankers Algorithm with a numerical example.', marks: '10 marks' },
-        { q: 'Compare FCFS, SJF, and Round Robin scheduling with Gantt charts.', marks: '10 marks' },
-        { q: 'Explain paging and segmentation with diagrams.', marks: '10 marks' },
-        { q: 'Solve a page replacement problem using FIFO, LRU, and Optimal.', marks: '10 marks' },
-        { q: 'Explain the Producer-Consumer problem using semaphores.', marks: '5 marks' },
-        { q: 'What are the necessary conditions for deadlock?', marks: '5 marks' },
-    ],
-    'DSA': [
-        { q: 'Write an algorithm for AVL tree insertion with rotations.', marks: '10 marks' },
-        { q: 'Explain BFS and DFS with examples and applications.', marks: '10 marks' },
-        { q: 'Compare Merge Sort and Quick Sort. Write algorithms.', marks: '10 marks' },
-        { q: 'Explain Dijkstras shortest path algorithm with example.', marks: '10 marks' },
-        { q: 'What is hashing? Explain collision resolution techniques.', marks: '5 marks' },
-        { q: 'Implement a stack using two queues.', marks: '5 marks' },
-    ],
-    'CN': [
-        { q: 'Compare OSI and TCP/IP models with a detailed diagram.', marks: '10 marks' },
-        { q: 'Explain subnetting with CIDR notation and solve a numerical.', marks: '10 marks' },
-        { q: 'Explain Stop-and-Wait and Sliding Window protocols.', marks: '10 marks' },
-        { q: 'What is CSMA/CD? How it differs from CSMA/CA?', marks: '5 marks' },
-        { q: 'Explain CRC error detection with an example.', marks: '5 marks' },
-    ],
-    'SE': [
-        { q: 'Compare Waterfall and Agile methodologies.', marks: '10 marks' },
-        { q: 'Draw and explain Use Case and Sequence Diagrams.', marks: '10 marks' },
-        { q: 'What is coupling and cohesion? Explain types.', marks: '5 marks' },
-        { q: 'Explain Black Box and White Box testing techniques.', marks: '10 marks' },
-        { q: 'What are Function Points? Explain the calculation.', marks: '5 marks' },
-    ],
-};
+const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+const BRANCHES = ['Computer', 'IT', 'Mechanical', 'Civil', 'Electrical', 'Electronics', 'Other'];
 
 export default function ExamModePage() {
-    const [selected, setSelected] = useState('DBMS');
+    const { user, loading } = useAuth();
+    const [year, setYear] = useState('');
+    const [branch, setBranch] = useState('');
+    const [subject, setSubject] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [plan, setPlan] = useState(null);
+    const [error, setError] = useState('');
 
-    const summaries = SUMMARIES[selected] || [];
-    const questions = IMP_QUESTIONS[selected] || [];
+    const generateAIPlan = async () => {
+        if (!year || !branch || !subject.trim()) {
+            setError('Please select Year, Branch, and enter a Subject.');
+            return;
+        }
+
+        setError('');
+        setIsGenerating(true);
+        setPlan(null); // Clear previous plan
+
+        try {
+            const response = await fetch('/api/generate-study-guide', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ year, branch, subject })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to generate study plan.');
+            }
+
+            const data = await response.json();
+            setPlan(data);
+        } catch (err) {
+            console.error('Generation Error:', err);
+            setError(err.message || 'Something went wrong while consulting the AI.');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    if (loading) {
+        return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Authenticating...</div>;
+    }
+
+    if (!user) {
+        return (
+            <div className={styles.pageWrapper}>
+                <div className={styles.pageInner}>
+                    <div style={{ textAlign: 'center', padding: 'var(--space-3xl)', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', maxWidth: '440px', margin: 'var(--space-3xl) auto', backdropFilter: 'blur(20px)' }}>
+                        <div style={{ color: 'var(--primary)', marginBottom: 'var(--space-lg)' }}><IconLock size={64} /></div>
+                        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>Sign in to Access</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-xl)' }}>You must be logged in to use Exam Mode and generate AI Study Plans.</p>
+                        <Link href="/login" style={{ display: 'inline-block', padding: '12px 32px', background: 'var(--primary)', color: '#fff', borderRadius: 'var(--radius-full)', fontWeight: 700, textDecoration: 'none', transition: 'all 0.3s ease' }}>
+                            Go to Login
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const ADMIN_EMAILS = ['sutraverse11@gmail.com'];
+    const isAdmin = user && (ADMIN_EMAILS.includes(user.email) || user.isAdmin);
+
+    if (!isAdmin) {
+        return (
+            <div className={styles.pageWrapper}>
+                <div className={styles.pageInner}>
+                    <div style={{ textAlign: 'center', padding: 'var(--space-3xl)', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', maxWidth: '440px', margin: 'var(--space-3xl) auto', backdropFilter: 'blur(20px)' }}>
+                        <div style={{ color: 'var(--accent)', marginBottom: 'var(--space-lg)' }}><IconSparkles size={64} /></div>
+                        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>Under Construction</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-xl)' }}>The AI-Powered Exam Mode is currently in internal beta testing. It will be released to all students very soon!</p>
+                        <Link href="/dashboard" style={{ display: 'inline-block', padding: '12px 32px', background: 'var(--primary)', color: '#fff', borderRadius: 'var(--radius-full)', fontWeight: 700, textDecoration: 'none', transition: 'all 0.3s ease' }}>
+                            Return to Dashboard
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.pageWrapper}>
@@ -96,76 +100,111 @@ export default function ExamModePage() {
                     <div className={styles.examHeader}>
                         <span className={styles.examIcon}><IconSparkles size={48} /></span>
                         <h1 className={styles.examTitle}>
-                            <span className={`${styles.examTitleAccent} text-shimmer`}>Last Night</span> Prep
+                            <span className={`${styles.examTitleAccent} text-shimmer`}>AI Last Night</span> Prep
                         </h1>
                         <p className={styles.examDesc}>
-                            Quick unit-wise summaries and important questions for your upcoming exams. Study smart, not hard.
+                            Configure your syllabus. Our intelligence engine will rapidly generate unit-wise summaries and the most critical questions to secure your grade.
                         </p>
                     </div>
                 </ScrollReveal>
 
-                {/* Subject Chips */}
+                {/* AI Configuration Engine */}
                 <ScrollReveal delay={100}>
-                    <div className={styles.subjectSelector}>
-                        {SUBJECTS.map(sub => (
-                            <button
-                                key={sub}
-                                className={`${styles.subjectChip} ${selected === sub ? styles.subjectChipActive : ''}`}
-                                onClick={() => setSelected(sub)}
-                            >
-                                {sub}
-                            </button>
-                        ))}
-                    </div>
-                </ScrollReveal>
-
-                {/* Tip */}
-                <ScrollReveal delay={200}>
-                    <div className={styles.tipCard}>
-                        <div className={styles.tipTitle}><IconLightbulb size={20} /> Pro Tip</div>
-                        <div className={styles.tipText}>
-                            Focus on the unit-wise key points below. These cover 80% of what is asked in exams. Practice the important questions at the bottom — they are the most frequently repeated.
+                    <div className={styles.aiConfigCard} style={{ background: 'var(--bg-card)', padding: '24px', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)', marginBottom: '32px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Academic Year</label>
+                                <select value={year} onChange={(e) => setYear(e.target.value)} style={{ padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
+                                    <option value="">Select Year...</option>
+                                    {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                                </select>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Engineering Branch</label>
+                                <select value={branch} onChange={(e) => setBranch(e.target.value)} style={{ padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-input)', color: 'var(--text-primary)' }}>
+                                    <option value="">Select Branch...</option>
+                                    {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                                </select>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Subject to Prepare</label>
+                                <input 
+                                    type="text" 
+                                    value={subject} 
+                                    onChange={(e) => setSubject(e.target.value)} 
+                                    placeholder="e.g. Distributed Database Systems"
+                                    style={{ padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', background: 'var(--bg-input)', color: 'var(--text-primary)' }} 
+                                />
+                            </div>
                         </div>
+
+                        {error && <div style={{ color: 'var(--danger)', marginBottom: '16px', fontSize: '0.875rem', fontWeight: 600 }}>{error}</div>}
+
+                        <button 
+                            onClick={generateAIPlan} 
+                            disabled={isGenerating}
+                            style={{ 
+                                width: '100%', padding: '14px', borderRadius: 'var(--radius-full)', background: 'var(--primary)', color: 'white', fontWeight: 700, fontSize: '1rem', border: 'none', cursor: isGenerating ? 'not-allowed' : 'pointer', transition: 'all 0.3s ease', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', opacity: isGenerating ? 0.7 : 1
+                            }}
+                        >
+                            <IconSparkles size={20} />
+                            {isGenerating ? 'Synthesizing Knowledge... Please Wait (up to 15s)' : 'Generate AI Master Plan'}
+                        </button>
                     </div>
                 </ScrollReveal>
 
-                {/* Unit Summaries */}
-                <ScrollReveal delay={300}>
-                    <h2 className={styles.sectionTitle}><IconClipboard size={28} /> Unit-wise Summary — {selected}</h2>
-                </ScrollReveal>
-                <div className={styles.summaryGrid}>
-                    {summaries.map((s, i) => (
-                        <ScrollReveal key={i} delay={i * 100}>
-                            <div className={`${styles.summaryCard} hover-lift`}>
-                                <span className={styles.unitLabel}>{s.unit}</span>
-                                <h3 className={styles.summaryTitle}>{s.title}</h3>
-                                <div className={styles.summaryPoints}>
-                                    {s.points.map((p, j) => (
-                                        <div key={j} className={styles.summaryPoint}>{p}</div>
-                                    ))}
-                                </div>
+                {/* Loading State or Tip */}
+                {!plan && !isGenerating && (
+                    <ScrollReveal delay={200}>
+                        <div className={styles.tipCard}>
+                            <div className={styles.tipTitle}><IconLightbulb size={20} /> Pro Tip</div>
+                            <div className={styles.tipText}>
+                                Select your exact year and branch alongside the subject. The AI will cross-reference academic curriculums to formulate precise summaries and predict high-value exam questions tailored for you.
                             </div>
-                        </ScrollReveal>
-                    ))}
-                </div>
+                        </div>
+                    </ScrollReveal>
+                )}
 
-                {/* Important Questions */}
-                <ScrollReveal>
-                    <h2 className={styles.sectionTitle}><IconStar size={28} /> Important Questions — {selected}</h2>
-                </ScrollReveal>
-                <div className={styles.questionsGrid}>
-                    {questions.map((q, i) => (
-                        <ScrollReveal key={i} delay={i * 80}>
-                            <div className={`${styles.questionCard} hover-lift`}>
-                                <div className={styles.questionNum}>{i + 1}</div>
-                                <div className={styles.questionContent}>
-                                    <div className={styles.questionText}>{q.q}</div>
-                                    <div className={styles.questionMarks}>{q.marks}</div>
-                                </div>
-                            </div>
+                {/* Display Generated Plan */}
+                {plan && (
+                    <>
+                        <ScrollReveal delay={100}>
+                            <h2 className={styles.sectionTitle}><IconClipboard size={28} /> AI Unit Summaries — {subject}</h2>
                         </ScrollReveal>
-                    ))}
-                </div>
+                        <div className={styles.summaryGrid}>
+                            {plan.summaries.map((s, i) => (
+                                <ScrollReveal key={i} delay={i * 100}>
+                                    <div className={`${styles.summaryCard} ${styles.hoverLift}`}>
+                                        <span className={styles.unitLabel}>{s.unit}</span>
+                                        <h3 className={styles.summaryTitle}>{s.title}</h3>
+                                        <div className={styles.summaryPoints}>
+                                            {s.points.map((p, j) => (
+                                                <div key={j} className={styles.summaryPoint}>{p}</div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </ScrollReveal>
+                            ))}
+                        </div>
+
+                        <ScrollReveal>
+                            <h2 className={styles.sectionTitle} style={{ marginTop: '48px' }}><IconStar size={28} /> High-Probability Questions</h2>
+                        </ScrollReveal>
+                        <div className={styles.questionsGrid}>
+                            {plan.questions.map((q, i) => (
+                                <ScrollReveal key={i} delay={i * 80}>
+                                    <div className={`${styles.questionCard} ${styles.hoverLift}`}>
+                                        <div className={styles.questionNum}>{i + 1}</div>
+                                        <div className={styles.questionContent}>
+                                            <div className={styles.questionText}>{q.q}</div>
+                                            <div className={styles.questionMarks}>{q.marks}</div>
+                                        </div>
+                                    </div>
+                                </ScrollReveal>
+                            ))}
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

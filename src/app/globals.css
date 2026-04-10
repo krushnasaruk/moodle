@@ -96,6 +96,8 @@
   --text-secondary: #a1a1aa;
   --text-muted: #71717a;
 
+  --notebook-line: rgba(255, 255, 255, 0.02);
+
   --shadow-glow: 0 0 20px var(--primary-glow);
   --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
   --glass-bg: rgba(18, 18, 20, 0.65);
@@ -125,12 +127,20 @@ body {
   position: relative;
   overflow-x: hidden;
   transition: background-color var(--transition-normal), color var(--transition-normal);
+  background-image: 
+    linear-gradient(var(--notebook-line, rgba(37, 99, 235, 0.03)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--notebook-line, rgba(37, 99, 235, 0.03)) 1px, transparent 1px);
+  background-size: 32px 32px;
+  animation: moveNotebook 60s linear infinite;
 }
 
-/* Notebook styling in LIGHT mode */
-html:not(.dark) body {
-  background-image: linear-gradient(rgba(37, 99, 235, 0.06) 1px, transparent 1px);
-  background-size: 100% 28px;
+@keyframes moveNotebook {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: -320px 320px, -320px 320px; /* Diagonal smooth floating */
+  }
 }
 
 /* Glowing Blobs in DARK mode */
