@@ -32,8 +32,8 @@ export default function SubjectsPage() {
     const { user, loading: authLoading } = useAuth();
 
     const [branch, setBranch] = useState('Computer');
-    const [year, setYear] = useState('2nd Year');
-    const [semester, setSemester] = useState('Sem 3');
+    const [year, setYear] = useState('1st Year');
+    const [semester, setSemester] = useState('Sem 1');
     const [subjectContent, setSubjectContent] = useState({});
     const [loading, setLoading] = useState(true);
     const [hasLoadedPrefs, setHasLoadedPrefs] = useState(false);
@@ -42,8 +42,8 @@ export default function SubjectsPage() {
         if (!authLoading && !hasLoadedPrefs) {
             if (user) {
                 setBranch(user.branch || 'Computer');
-                setYear(user.year || '2nd Year');
-                setSemester(user.semester || 'Sem 3');
+                setYear(user.year || '1st Year');
+                setSemester(user.semester || 'Sem 1');
             }
             setHasLoadedPrefs(true);
         }

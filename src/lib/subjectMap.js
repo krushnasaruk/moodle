@@ -26,7 +26,7 @@ export const SEMESTERS = {
 
 export const SUBJECT_MAP = {
     Computer: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Programming in C'],
+        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
         'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Communication Skills', 'Environmental Science'],
         'Sem 3': ['DBMS', 'Data Structures', 'Digital Electronics', 'Engineering Mathematics III', 'Discrete Mathematics'],
         'Sem 4': ['Operating Systems', 'Computer Networks', 'Theory of Computation', 'Computer Organization', 'Engineering Mathematics IV'],
@@ -36,7 +36,7 @@ export const SUBJECT_MAP = {
         'Sem 8': ['Blockchain', 'Cyber Security', 'Project II', 'Elective IV'],
     },
     IT: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Programming in C'],
+        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
         'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Communication Skills', 'Environmental Science'],
         'Sem 3': ['DBMS', 'Data Structures', 'Digital Electronics', 'Engineering Mathematics III', 'Web Development'],
         'Sem 4': ['Operating Systems', 'Computer Networks', 'Software Engineering', 'Computer Organization', 'Engineering Mathematics IV'],
@@ -46,7 +46,7 @@ export const SUBJECT_MAP = {
         'Sem 8': ['Blockchain', 'Project II', 'Elective V'],
     },
     Mechanical: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Engineering Graphics'],
+        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Engineering Graphics', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
         'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Thermodynamics I', 'Environmental Science'],
         'Sem 3': ['Fluid Mechanics', 'Strength of Materials', 'Thermodynamics II', 'Engineering Mathematics III', 'Manufacturing Processes'],
         'Sem 4': ['Kinematics of Machinery', 'Heat Transfer', 'Machine Design I', 'Engineering Mathematics IV', 'Material Science'],
@@ -56,7 +56,7 @@ export const SUBJECT_MAP = {
         'Sem 8': ['Project II', 'Elective V'],
     },
     Civil: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Engineering Graphics'],
+        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Engineering Graphics', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
         'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Surveying I', 'Environmental Science'],
         'Sem 3': ['Structural Analysis I', 'Fluid Mechanics', 'Building Construction', 'Engineering Mathematics III', 'Surveying II'],
         'Sem 4': ['Structural Analysis II', 'Geotechnical Engineering', 'Hydraulics', 'Engineering Mathematics IV', 'Transportation Engineering'],
@@ -66,7 +66,7 @@ export const SUBJECT_MAP = {
         'Sem 8': ['Project II', 'Elective V'],
     },
     Electrical: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Programming in C'],
+        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
         'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Circuit Theory', 'Environmental Science'],
         'Sem 3': ['Electrical Machines I', 'Network Analysis', 'Electronics', 'Engineering Mathematics III', 'Electromagnetic Theory'],
         'Sem 4': ['Electrical Machines II', 'Power Systems I', 'Control Systems', 'Engineering Mathematics IV', 'Signals & Systems'],
@@ -76,7 +76,7 @@ export const SUBJECT_MAP = {
         'Sem 8': ['Project II', 'Elective V'],
     },
     Electronics: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Programming in C'],
+        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
         'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Circuit Theory', 'Environmental Science'],
         'Sem 3': ['Analog Electronics', 'Digital Electronics', 'Network Analysis', 'Engineering Mathematics III', 'Signals & Systems'],
         'Sem 4': ['Microprocessor', 'Communication Systems', 'Control Systems', 'Engineering Mathematics IV', 'Electromagnetic Theory'],
