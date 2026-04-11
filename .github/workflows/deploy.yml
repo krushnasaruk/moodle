@@ -4,24 +4,34 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+  workflow_dispatch: # Allows manual trigger from GitHub UI
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
+      # ── 1. Get the source code ─────────────────────────────────────────────
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # ── 2. Set up Node 20 with npm caching ────────────────────────────────
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
+      # ── 3. Clean install (uses package-lock.json for reproducibility) ──────
       - name: Install Dependencies
         run: npm ci
 
+      # ── 4. Lint (warnings won't block deploy) ─────────────────────────────
+      - name: Lint Check
+        run: npm run lint
+        continue-on-error: true
+
+      # ── 5. Production build — env vars injected from GitHub Secrets ────────
       - name: Build Next.js
         run: npm run build
         env:
@@ -32,6 +42,7 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
           NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
 
+      # ── 6. Assemble standalone output into a single deployable folder ──────
       - name: Prepare Standalone Build
         run: |
           mkdir -p standalone_deployment
@@ -39,11 +50,17 @@ jobs:
           cp -r public standalone_deployment/public
           mkdir -p standalone_deployment/.next
           cp -r .next/static standalone_deployment/.next/static
-          
-          # Create passenger restart trigger
+
+          # Rename server.js entrypoint so Passenger / cPanel can find it
+          # (already named server.js in standalone output — this is a no-op
+          #  but kept here as documentation)
+          ls standalone_deployment/
+
+          # Touch restart.txt so Passenger picks up the new code automatically
           mkdir -p standalone_deployment/tmp
           touch standalone_deployment/tmp/restart.txt
 
+      # ── 7. Upload to MilesWeb via FTP ─────────────────────────────────────
       - name: FTP Sync to MilesWeb
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -51,5 +68,8 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./standalone_deployment/
-          server-dir: ./
+          server-dir: ./        # ← adjust if your app root is ./public_html/
           dangerous-clean-slate: false
+          exclude: |
+            node_modules/**
+            .git/**
