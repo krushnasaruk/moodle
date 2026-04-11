@@ -68,7 +68,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./standalone_deployment/
-          server-dir: ./        # ← adjust if your app root is ./public_html/
+          server-dir: /home/jhdexjiu/public_html/  # MilesWeb web root
           dangerous-clean-slate: false
           exclude: |
             node_modules/**
