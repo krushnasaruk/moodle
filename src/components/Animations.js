@@ -98,6 +98,10 @@ export function CountUp({ end, duration = 2000, suffix = '', className = '' }) {
         const el = ref.current;
         if (!el) return;
 
+        // Reset the counter lock whenever the target 'end' value changes 
+        // This ensures it re-animates when dynamic data finally loads
+        counted.current = false;
+
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting && !counted.current) {
