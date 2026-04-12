@@ -7,10 +7,14 @@ import { db, storage } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import styles from './page.module.css';
 import Link from 'next/link';
-import { IconShield, IconCheck, IconX, IconEye, IconLock, IconFolder, IconUser, IconCalendar } from '@/components/Icons';
+import { IconShield, IconCheck, IconX, IconEye, IconLock, IconFolder, IconUser, IconCalendar, IconFlag, IconPen } from '@/components/Icons';
 
 // Add your admin email(s) here
 const ADMIN_EMAILS = ['sutraverse11@gmail.com'];
+
+const TYPES = ['Notes', 'PYQ', 'Assignment'];
+const BRANCHES = ['Computer', 'IT', 'Mechanical', 'Civil', 'Electrical', 'Electronics'];
+const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
 export default function AdminPage() {
     const { user } = useAuth();
@@ -18,6 +22,10 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState('pending');
     const [actionLoading, setActionLoading] = useState('');
+
+    // Modal State
+    const [editingFile, setEditingFile] = useState(null);
+    const [editForm, setEditForm] = useState({ type: '', subject: '', branch: '', year: '' });
 
     const isAdmin = user && (ADMIN_EMAILS.includes(user.email) || user.isAdmin);
 
@@ -36,9 +44,15 @@ export default function AdminPage() {
             const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000));
             const fetchPromise = getDocs(collection(db, 'files'));
             const snapshot = await Promise.race([fetchPromise, timeout]);
-            const data = snapshot.docs
-                .map(d => ({ id: d.id, ...d.data() }))
-                .filter(f => f.status === tab);
+            
+            let data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            if (tab === 'reported') {
+                data = data.filter(f => f.isReported === true);
+            } else {
+                data = data.filter(f => f.status === tab && !f.isReported);
+            }
+
             data.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
             setFiles(data);
         } catch (error) {
@@ -73,8 +87,52 @@ export default function AdminPage() {
         setActionLoading('');
     };
 
+    const handleDismissReport = async (fileId) => {
+        setActionLoading(fileId);
+        try {
+            await updateDoc(doc(db, 'files', fileId), { isReported: false, reportCount: 0 });
+            setFiles(prev => prev.filter(f => f.id !== fileId));
+        } catch (error) {
+            console.error('Error dismissing report:', error);
+            alert('Failed to clear report.');
+        }
+        setActionLoading('');
+    };
+
     const handlePreview = (fileURL) => {
         window.open(fileURL, '_blank');
+    };
+
+    const openEditModal = (file) => {
+        setEditingFile(file);
+        setEditForm({
+            type: file.type || 'Notes',
+            subject: file.subject || '',
+            branch: file.branch || 'Computer',
+            year: file.year || '1st Year'
+        });
+    };
+
+    const savePathCorrection = async () => {
+        if (!editingFile) return;
+        setActionLoading(editingFile.id);
+        try {
+            await updateDoc(doc(db, 'files', editingFile.id), {
+                type: editForm.type,
+                subject: editForm.subject,
+                branch: editForm.branch,
+                year: editForm.year,
+                isReported: false,
+                reportCount: 0
+            });
+            alert('Metadata corrected successfully! Report has been cleared.');
+            setFiles(prev => prev.filter(f => f.id !== editingFile.id));
+            setEditingFile(null);
+        } catch (error) {
+            console.error('Error saving path:', error);
+            alert('Failed to update file path.');
+        }
+        setActionLoading('');
     };
 
     const formatFileSize = (bytes) => {
@@ -124,7 +182,7 @@ export default function AdminPage() {
             <div className={styles.pageInner}>
                 <div className={styles.pageHeader}>
                     <h1 className={styles.pageTitle}><IconShield size={40} /> Admin Panel</h1>
-                    <p className={styles.pageDesc}>Review and moderate uploaded content before it goes live.</p>
+                    <p className={styles.pageDesc}>Review uploads, moderate content, and fix community reports.</p>
                 </div>
 
                 <div className={styles.tabs}>
@@ -134,27 +192,35 @@ export default function AdminPage() {
                     <button className={`${styles.tab} ${tab === 'approved' ? styles.tabActive : ''}`} onClick={() => setTab('approved')}>
                         ✅ Approved
                     </button>
+                    <button className={`${styles.tab} ${tab === 'reported' ? styles.reportedActive : ''}`} onClick={() => setTab('reported')}>
+                        ⚠️ Reported
+                    </button>
                     <button className={`${styles.tab} ${tab === 'rejected' ? styles.tabActive : ''}`} onClick={() => setTab('rejected')}>
                         ❌ Rejected
                     </button>
                 </div>
 
                 {loading ? (
-                    <div className={styles.loadingState}>Loading files...</div>
+                    <div className={styles.loadingState}>Refreshing database...</div>
                 ) : files.length === 0 ? (
                     <div className={styles.emptyState}>
                         <div className={styles.emptyIcon}><IconFolder size={64} /></div>
-                        <div className={styles.emptyText}>No {tab} files</div>
+                        <div className={styles.emptyText}>No files in this queue</div>
                         <div className={styles.emptySubtext}>
-                            {tab === 'pending' ? 'All uploads have been reviewed! 🎉' : `No files with ${tab} status.`}
+                            {tab === 'pending' ? 'All uploads have been reviewed! 🎉' : 
+                             tab === 'reported' ? 'Amazing! No community reports found. 🏆' : 
+                             `No files with ${tab} status.`}
                         </div>
                     </div>
                 ) : (
                     <div className={styles.fileList}>
                         {files.map((file) => (
-                            <div key={file.id} className={styles.fileCard}>
+                            <div key={file.id} className={`${styles.fileCard} ${file.isReported ? styles.reportedCard : ''}`}>
                                 <div className={styles.fileInfo}>
-                                    <div className={styles.fileTitle}>{file.title}</div>
+                                    <div className={styles.fileTitle}>
+                                        {file.title} 
+                                        {file.isReported && <span className={styles.flagBadge}>{file.reportCount || 1} Flags</span>}
+                                    </div>
                                     <div className={styles.fileMeta}>
                                         <span className={styles.metaTag}><IconFolder size={14} /> {file.type}</span>
                                         <span className={styles.metaTag}>{file.subject}</span>
@@ -190,12 +256,79 @@ export default function AdminPage() {
                                             </button>
                                         </>
                                     )}
+                                    {tab === 'reported' && (
+                                        <>
+                                            <button
+                                                className={`${styles.actionBtn} ${styles.editBtn}`}
+                                                onClick={() => openEditModal(file)}
+                                            >
+                                                <IconPen size={16} /> Edit Path
+                                            </button>
+                                            <button
+                                                className={`${styles.actionBtn} ${styles.approveBtn}`}
+                                                onClick={() => handleDismissReport(file.id)}
+                                                disabled={actionLoading === file.id}
+                                            >
+                                                <IconCheck size={16} /> Ignore
+                                            </button>
+                                            <button
+                                                className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                                                onClick={() => handleReject(file)}
+                                                disabled={actionLoading === file.id}
+                                            >
+                                                <IconX size={16} /> Delete
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* EDIT PATH MODAL */}
+            {editingFile && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <h2 className={styles.modalTitle}>Fix Misplaced File</h2>
+                        <p className={styles.modalDesc}>Move <strong>{editingFile.title}</strong> to the correct directory.</p>
+                        
+                        <div className={styles.formGroup}>
+                            <label>File Type</label>
+                            <select className={styles.modalSelect} value={editForm.type} onChange={e => setEditForm({...editForm, type: e.target.value})}>
+                                {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label>Subject</label>
+                            <input type="text" className={styles.modalInput} value={editForm.subject} onChange={e => setEditForm({...editForm, subject: e.target.value})} placeholder="e.g. Physics" />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label>Branch</label>
+                            <select className={styles.modalSelect} value={editForm.branch} onChange={e => setEditForm({...editForm, branch: e.target.value})}>
+                                {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label>Year</label>
+                            <select className={styles.modalSelect} value={editForm.year} onChange={e => setEditForm({...editForm, year: e.target.value})}>
+                                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                            </select>
+                        </div>
+
+                        <div className={styles.modalActions}>
+                            <button className={styles.modalCancel} onClick={() => setEditingFile(null)}>Cancel</button>
+                            <button className={styles.modalSave} disabled={actionLoading === editingFile.id} onClick={savePathCorrection}>
+                                {actionLoading === editingFile.id ? 'Saving...' : 'Save & Resolve'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

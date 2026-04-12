@@ -1,22 +1,24 @@
+/* ===== DASHBOARD V2: PREMIUM GLASSMORPHISM ===== */
+
 .pageWrapper {
     padding-top: calc(var(--navbar-height) + var(--space-xl));
     min-height: 100vh;
+    position: relative;
+    z-index: 1; /* Sit above the globals floating orbs */
 }
 
 .pageInner {
-    max-width: 860px;
+    max-width: 900px;
     margin: 0 auto;
     padding: 0 var(--space-lg) var(--space-3xl);
 }
 
-/* Login Prompt */
+/* ======================================================== */
+/* LOGIN PROMPT */
+/* ======================================================== */
 .loginPrompt {
     text-align: center;
     padding: var(--space-3xl);
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    backdrop-filter: blur(20px);
     max-width: 440px;
     margin: var(--space-3xl) auto;
 }
@@ -28,8 +30,8 @@
 
 .loginTitle {
     font-family: var(--font-heading);
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 2rem;
+    font-weight: 800;
     color: var(--text-primary);
     margin-bottom: var(--space-sm);
 }
@@ -40,48 +42,52 @@
 }
 
 .loginBtn {
-    display: inline-block;
+    display: inline-flex;
+    justify-content: center;
     padding: 12px 32px;
-    background: var(--primary);
+    background: var(--gradient-brand);
     color: #fff;
     border-radius: var(--radius-full);
     font-weight: 700;
     text-decoration: none;
     transition: all var(--transition-fast);
+    box-shadow: 0 4px 20px var(--primary-glow);
 }
 
 .loginBtn:hover {
-    box-shadow: 0 0 15px var(--primary-glow);
+    box-shadow: 0 8px 30px var(--primary-glow), 0 0 15px var(--secondary-glow);
     transform: translateY(-2px);
 }
 
-/* Profile Header (Student ID Card Style) */
+/* ======================================================== */
+/* ID CARD (PROFILE HEADER) */
+/* ======================================================== */
 .profileHeader {
     display: flex;
     align-items: center;
     gap: var(--space-xl);
     padding: var(--space-3xl) var(--space-2xl);
-    background: linear-gradient(135deg, rgba(30, 30, 36, 0.8), rgba(20, 20, 24, 0.95));
-    border: 1px solid var(--border);
     margin-bottom: var(--space-3xl);
-    border-radius: var(--radius-xl);
-    backdrop-filter: blur(20px);
+    backdrop-filter: var(--blur-strong);
     position: relative;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    /* Soft internal glow border */
+    box-shadow: inset 0 0 50px rgba(255, 255, 255, 0.05), var(--shadow-glass);
 }
 
-.profileHeader::after {
+.profileHeader::before {
     content: '';
     position: absolute;
-    top: 0; right: 0; bottom: 0; left: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h40v40H0V0zm20 20h20v20H20V20zM0 20h20v20H0V20z' fill='%23ffffff' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
     pointer-events: none;
     z-index: 0;
+    opacity: 0.5;
 }
 
 .profileAvatar {
-    width: 110px;
-    height: 110px;
+    width: 120px;
+    height: 120px;
     position: relative;
     z-index: 1;
     flex-shrink: 0;
@@ -92,8 +98,8 @@
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
-    border: 4px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 30px var(--primary-glow);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 40px var(--primary-glow);
     overflow: hidden;
     display: block;
 }
@@ -110,8 +116,8 @@
     font-size: 3rem;
     font-family: var(--font-heading);
     border-radius: 50%;
-    border: 4px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 30px var(--primary-glow);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 40px var(--primary-glow);
     overflow: hidden;
 }
 
@@ -125,9 +131,8 @@
     font-size: 2.5rem;
     font-weight: 800;
     color: var(--text-primary);
-    letter-spacing: -0.03em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     margin-bottom: 2px;
-    line-height: 1.1;
 }
 
 .profileInfo p {
@@ -139,102 +144,70 @@
 /* Gamification Elements */
 .levelBadge {
     position: absolute;
-    bottom: -10px;
+    bottom: -15px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--primary);
+    background: var(--gradient-brand);
     color: white;
-    padding: 4px 12px;
+    padding: 6px 14px;
     border-radius: var(--radius-full);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 800;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    border: 2px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.2);
     z-index: 2;
     white-space: nowrap;
-    min-width: max-content;
+    letter-spacing: 0.05em;
 }
 
 .pointsBadge {
-    background: rgba(254, 228, 64, 0.15);
-    color: var(--accent);
-    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    padding: 6px 14px;
     border-radius: var(--radius-full);
     font-size: 0.875rem;
     font-weight: 700;
-    border: 1px solid rgba(254, 228, 64, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
 }
 
 .progressContainer {
     margin-top: 24px;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.3);
     padding: 16px;
     border-radius: var(--radius-lg);
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     max-width: 400px;
+    backdrop-filter: blur(10px);
 }
 
 .progressHeader {
     display: flex;
     justify-content: space-between;
     font-size: 0.813rem;
-    color: rgba(255,255,255,0.8);
-    margin-bottom: 8px;
     font-weight: 600;
+    margin-bottom: 8px;
 }
 
 .progressBar {
     height: 8px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
     border-radius: 4px;
     overflow: hidden;
+    position: relative;
 }
 
 .progressFill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    background: linear-gradient(90deg, var(--secondary), var(--primary));
     border-radius: 4px;
     transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 15px var(--secondary-glow);
 }
 
-/* Badges Showcase */
-.badgesWrapper {
-    display: flex;
-    gap: var(--space-md);
-    margin-bottom: var(--space-2xl);
-    flex-wrap: wrap;
-    animation: fadeInUp 0.5s ease-out;
-}
-
-.badgeItem {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-left-width: 4px;
-    padding: 12px 16px;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-}
-
-.badgeItem:hover {
-    transform: translateY(-3px);
-}
-
-.badgeIcon {
-    font-size: 1.5rem;
-    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
-}
-
-.badgeName {
-    font-weight: 700;
-    font-size: 0.875rem;
-    color: var(--text-primary);
-}
-
-/* Bento Grid Structure */
+/* ======================================================== */
+/* BENTO GRID (The layout system) */
+/* ======================================================== */
 .bentoGrid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -242,61 +215,57 @@
     margin-bottom: var(--space-2xl);
 }
 
+/* Sub-classes for specific Tile widths */
+.uploadsTile { grid-column: 1 / -1; }
+.classHubTile { grid-column: 1 / -1; }
+
 .bentoTile {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
     padding: var(--space-xl);
-    backdrop-filter: blur(20px);
     display: flex;
     flex-direction: column;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    transition: border-color 0.3s ease;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+/* The sweeping glow border effect on hover */
+.bentoTile::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: inherit;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
 }
 
 .bentoTile:hover {
-    border-color: rgba(255,255,255,0.15);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(138, 43, 226, 0.1);
 }
 
-.bentoStats {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-    margin-top: var(--space-md);
+.bentoTile:hover::after {
+    opacity: 1;
 }
 
-.bentoStatCard {
+.sectionTitle {
     display: flex;
     align-items: center;
-    gap: 16px;
-    background: rgba(255,255,255,0.03);
-    padding: 16px;
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(255,255,255,0.05);
-}
-
-.bentoStatNum {
+    gap: 10px;
     font-family: var(--font-heading);
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 800;
     color: var(--text-primary);
-    line-height: 1;
 }
 
-.bentoStatLabel {
-    font-size: 0.813rem;
-    color: var(--text-muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: 4px;
-}
 
-.uploadsTile {
-    grid-column: 1 / -1;
-}
-
-/* Academic Profile */
+/* ======================================================== */
+/* EDIT PROFILE SECTION */
+/* ======================================================== */
 .profileSection {
     display: flex;
     flex-direction: column;
@@ -310,20 +279,10 @@
     margin-bottom: var(--space-lg);
 }
 
-.sectionTitle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--font-heading);
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
 .editBtn {
     padding: 6px 16px;
-    background: var(--bg-input);
-    color: var(--primary);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
     border: 1px solid var(--border);
     border-radius: var(--radius-full);
     font-weight: 600;
@@ -333,9 +292,8 @@
 }
 
 .editBtn:hover {
-    background: var(--primary);
+    background: rgba(255, 255, 255, 0.1);
     color: #fff;
-    border-color: var(--primary);
 }
 
 .profileGrid {
@@ -359,8 +317,8 @@
 }
 
 .fieldValue {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 1.05rem;
+    font-weight: 700;
     color: var(--text-primary);
 }
 
@@ -371,16 +329,17 @@
 }
 
 .link {
-    color: var(--primary);
+    color: var(--primary-light);
     background: none;
     border: none;
     cursor: pointer;
     font-weight: 600;
     font-size: inherit;
+    transition: text-shadow 0.3s ease;
 }
 
 .link:hover {
-    text-decoration: underline;
+    text-shadow: 0 0 10px var(--primary-glow);
 }
 
 .subjectChips {
@@ -394,14 +353,16 @@
 
 .subjectChip {
     padding: 6px 14px;
-    background: var(--primary);
-    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
     border-radius: var(--radius-full);
     font-size: 0.75rem;
     font-weight: 600;
 }
 
-/* Edit Form */
+
+/* Form specific styling inside bentos */
 .editGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -420,29 +381,26 @@
     font-weight: 700;
     text-transform: uppercase;
     color: var(--text-muted);
-    letter-spacing: 0.04em;
 }
 
-.editField select {
+.editField select, .editField input {
     padding: 10px 14px;
-    background: var(--bg-input);
+    background: rgba(0, 0, 0, 0.3);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     color: var(--text-primary);
     font-size: 0.875rem;
-    appearance: none;
-    cursor: pointer;
+    transition: box-shadow var(--transition-fast);
 }
 
-.editField select:focus {
+.editField select option {
+    background: var(--bg-main);
+}
+
+.editField select:focus, .editField input:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 2px var(--primary-glow);
-}
-
-.editField select:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 .editActions {
@@ -453,7 +411,7 @@
 
 .cancelBtn {
     padding: 10px 20px;
-    background: var(--bg-input);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-secondary);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -461,96 +419,99 @@
     cursor: pointer;
 }
 
-.cancelBtn:hover {
-    color: var(--text-primary);
-}
-
 .saveBtn {
     padding: 10px 24px;
-    background: var(--primary);
+    background: var(--gradient-brand);
     color: #fff;
     border: none;
     border-radius: var(--radius-md);
     font-weight: 700;
     cursor: pointer;
-    transition: all var(--transition-fast);
 }
 
-.saveBtn:hover:not(:disabled) {
-    box-shadow: 0 4px 12px var(--primary-glow);
-    transform: translateY(-1px);
-}
-
-.saveBtn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-/* Stats */
-.statsGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+/* ======================================================== */
+/* INTERNAL STAT BLOCKS */
+/* ======================================================== */
+.bentoStats {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-md);
-    margin-bottom: var(--space-xl);
+    margin-top: var(--space-md);
 }
 
-.statCard {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-xl);
-    text-align: center;
-    backdrop-filter: blur(20px);
-    transition: all var(--transition-fast);
+.bentoStatCard {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(255,255,255,0.03);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
-.statCard:hover {
-    border-color: var(--primary-light);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-.statIcon {
-    color: var(--primary);
-    margin-bottom: var(--space-sm);
-}
-
-.statNumber {
+.bentoStatNum {
     font-family: var(--font-heading);
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 800;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    line-height: 1;
 }
 
-.statLabel {
-    font-size: 0.75rem;
+.bentoStatLabel {
+    font-size: 0.813rem;
     color: var(--text-muted);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    margin-top: 4px;
 }
 
-/* Uploads */
+.badgesWrapper {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-2xl);
+    flex-wrap: wrap;
+}
+
+.badgeItem {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.badgeIcon { font-size: 1.5rem; }
+.badgeName { font-weight: 700; font-size: 0.9rem; color: var(--text-primary); }
+
+
+/* ======================================================== */
+/* UPLOADS LIST VIEW */
+/* ======================================================== */
 .uploadsList {
     display: flex;
     flex-direction: column;
-    gap: var(--space-md);
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
 }
 
 .uploadItem {
     display: flex;
     align-items: center;
     gap: var(--space-lg);
-    padding: var(--space-lg);
-    background: var(--bg-card);
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     transition: all var(--transition-fast);
 }
 
 .uploadItem:hover {
-    border-color: var(--primary-light);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
     transform: translateX(4px);
 }
 
@@ -564,70 +525,50 @@
     flex-shrink: 0;
 }
 
-.iconNotes {
-    background: rgba(37, 99, 235, 0.1);
-    color: #2563eb;
-}
+.iconNotes { background: rgba(37, 99, 235, 0.1); color: #3b82f6; }
+.iconPyq { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.iconAssignment { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 
-.iconPyq {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-}
-
-.iconAssignment {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-}
-
-.uploadDetails {
-    flex: 1;
-    min-width: 0;
-}
+.uploadDetails { flex: 1; min-width: 0; }
 
 .uploadTitle {
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1rem;
     color: var(--text-primary);
-    font-size: 0.938rem;
     margin-bottom: 4px;
-    text-overflow: ellipsis;
-    overflow: hidden;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.uploadMeta {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-}
+.uploadMeta { font-size: 0.8rem; color: var(--text-muted); }
 
 .uploadStats {
     display: flex;
     gap: var(--space-md);
-    font-size: 0.813rem;
+    font-size: 0.85rem;
     color: var(--text-secondary);
     font-weight: 600;
     flex-shrink: 0;
 }
 
-.uploadStats span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
+.uploadStats span { display: flex; align-items: center; gap: 4px; }
 
-/* Empty state (Gamified) */
+
+/* ======================================================== */
+/* GAMIFIED EMPTY STATE */
+/* ======================================================== */
 .emptyStateGamified {
     padding: var(--space-3xl);
     text-align: center;
-    background: linear-gradient(135deg, rgba(157, 78, 221, 0.1), rgba(0, 245, 212, 0.05));
-    border: 1px dashed rgba(157, 78, 221, 0.3);
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(0, 229, 255, 0.05));
+    border: 1px dashed rgba(138, 43, 226, 0.4);
     border-radius: var(--radius-xl);
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
-    animation: fadeInUp 0.5s ease-out;
-    margin-top: var(--space-md);
+    margin-top: var(--space-lg);
 }
 
 .bountyIcon {
-    font-size: 3.5rem;
+    font-size: 4rem;
     margin-bottom: var(--space-md);
     animation: pulse 2s infinite;
 }
@@ -640,95 +581,196 @@
 
 .btnBounty {
     display: inline-block;
-    padding: 12px 24px;
-    background: var(--primary);
+    padding: 12px 28px;
+    background: var(--gradient-brand);
     color: white;
     font-weight: 800;
     border-radius: var(--radius-full);
     text-decoration: none;
-    box-shadow: 0 4px 15px rgba(157, 78, 221, 0.4);
+    box-shadow: 0 4px 20px var(--primary-glow);
     transition: all 0.3s ease;
 }
 
 .btnBounty:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(157, 78, 221, 0.6);
-    background: var(--primary-light);
+    box-shadow: 0 8px 30px var(--primary-glow), inset 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .emptyState {
     text-align: center;
     padding: var(--space-3xl);
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-}
-
-.emptyIcon {
     color: var(--text-muted);
-    margin-bottom: var(--space-md);
 }
 
 .emptyText {
     font-family: var(--font-heading);
     font-weight: 700;
+    font-size: 1.2rem;
+}
+
+
+/* ======================================================== */
+/* STATUS BADGES */
+/* ======================================================== */
+.statusPending { padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.statusApproved { padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 700; background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.statusRejected { padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 700; background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+
+/* ======================================================== */
+/* CLASS HUB */
+/* ======================================================== */
+.hubHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hubGrid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--space-2xl);
+}
+
+.attendanceBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    padding: var(--space-xl);
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.attendanceBox h3 {
+    margin-bottom: var(--space-lg);
     font-size: 1.1rem;
+    font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: var(--space-sm);
 }
 
-.emptySub {
+.ringWrapper {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin-bottom: var(--space-lg);
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.05));
+}
+
+.circularChart {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.circleBg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 3.8;
+}
+
+.circleFill {
+    fill: none;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1s ease-out;
+}
+
+.ringText {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.ringPercent {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: var(--font-heading);
+    color: var(--text-primary);
+}
+
+.attStatsRow {
+    display: flex;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 20px;
+    border-radius: var(--radius-full);
+}
+
+.attStat {
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.attWarning {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: var(--warning);
+    background: rgba(245, 158, 11, 0.1);
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+}
+
+.announcementsBox h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+.announcementList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.announcementCard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+}
+
+.announcementCard:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.annMeta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+}
+
+.annTeacher { font-weight: 700; color: var(--accent); }
+.annDate { color: var(--text-muted); }
+
+.annMessage {
+    font-size: 0.95rem;
     color: var(--text-secondary);
+    line-height: 1.5;
 }
 
-/* Status badges */
-.statusPending {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    font-size: 0.688rem;
-    font-weight: 700;
-    background: rgba(245, 158, 11, 0.15);
-    color: #f59e0b;
+.emptyAnnouncements {
+    padding: var(--space-2xl);
+    text-align: center;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-lg);
 }
 
-.statusApproved {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    font-size: 0.688rem;
-    font-weight: 700;
-    background: rgba(16, 185, 129, 0.15);
-    color: #10b981;
-}
-
-.statusRejected {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    font-size: 0.688rem;
-    font-weight: 700;
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-}
-
+/* RESPONSIVE */
 @media (max-width: 900px) {
-    .bentoGrid {
-        grid-template-columns: 1fr;
-    }
-    .bentoTile {
-        grid-column: 1 / -1 !important;
-    }
-}
-
-@media (max-width: 600px) {
-    .profileHeader {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .profileGrid,
-    .editGrid {
-        grid-template-columns: 1fr;
-    }
+    .bentoGrid { grid-template-columns: 1fr; }
+    .hubGrid { grid-template-columns: 1fr; }
+    .profileHeader { flex-direction: column; text-align: center; padding: var(--space-2xl); }
+    .progressContainer { margin: 24px auto 0; }
 }

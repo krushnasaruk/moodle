@@ -4,16 +4,15 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
     const { user, logout } = useAuth();
-    const { theme, toggleTheme } = useTheme();
     const pathname = usePathname();
     const router = useRouter();
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [scrolled, setScrolled] = useState(false);
     const menuRef = useRef(null);
 
     useEffect(() => {
@@ -22,8 +21,25 @@ export default function Navbar() {
                 setMenuOpen(false);
             }
         }
+        
+        function handleScroll() {
+            if (window.scrollY > 20) {
+                setScrolled(true);
+            } else {
+                setScrolled(false);
+            }
+        }
+        
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        window.addEventListener('scroll', handleScroll);
+        
+        // Initial check
+        handleScroll();
+        
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll);
+        };
     }, []);
 
     const handleSearch = (e) => {
@@ -44,7 +60,7 @@ export default function Navbar() {
     ];
 
     return (
-        <nav className={styles.navbar}>
+        <nav className={`${styles.navbar} ${scrolled ? styles.navbarScrolled : ''}`}>
             <div className={styles.navInner}>
                 {/* Logo */}
                 <Link href="/" className={styles.logo}>
@@ -79,9 +95,6 @@ export default function Navbar() {
 
                 {/* Actions */}
                 <div className={styles.navActions}>
-                    <button className={styles.themeToggle} onClick={toggleTheme} aria-label="Toggle Theme">
-                        {theme === 'light' ? '🌙' : '☀️'}
-                    </button>
 
                     <Link href="/upload" className={styles.uploadBtn}>
                         📤 <span>Upload</span>
@@ -102,7 +115,7 @@ export default function Navbar() {
                                 )}
                             </div>
                             {menuOpen && (
-                                <div className={styles.profileMenu}>
+                                <div className={`${styles.profileMenu} ${scrolled ? styles.profileMenuScrolled : ''}`}>
                                     <div className={styles.profileMenuItem} style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                                         {user.name}
                                     </div>
@@ -110,6 +123,11 @@ export default function Navbar() {
                                     <Link href="/dashboard" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
                                         📊 Dashboard
                                     </Link>
+                                    {user.role === 'teacher' && (
+                                        <Link href="/teacher" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)} style={{ color: 'var(--accent)' }}>
+                                            🎓 Teacher Dashboard
+                                        </Link>
+                                    )}
                                     <Link href="/upload" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
                                         📤 Upload
                                     </Link>

@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { collection, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, increment, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
+import { awardDownloadPoints } from '@/lib/points';
 import { ScrollReveal, TextReveal, CountUp } from '@/components/Animations';
 import styles from './page.module.css';
 import { IconNotes, IconPyq, IconAssignment, IconSparkles, IconUser, IconFolder, IconHat, IconStar, IconDownload } from '@/components/Icons';
@@ -23,6 +24,7 @@ export default function HomePage() {
   const [heroQuery, setHeroQuery] = useState('');
   const [recentFiles, setRecentFiles] = useState([]);
   const [loadingFiles, setLoadingFiles] = useState(true);
+  const [topContributors, setTopContributors] = useState([]);
   const [platformStats, setPlatformStats] = useState({ notes: 0, students: 0, pyqs: 0, subjects: 0 });
   const router = useRouter();
   const { user } = useAuth();
@@ -55,10 +57,10 @@ export default function HomePage() {
         });
 
         setPlatformStats({
-            notes: notesCount > 0 ? notesCount : 1, // Fallback visual at minimum 1 if live
+            notes: notesCount > 0 ? notesCount : 1, 
             pyqs: pyqsCount > 0 ? pyqsCount : 1,
             subjects: subjectsSet.size > 0 ? subjectsSet.size : 5,
-            students: uploadersSet.size > 0 ? uploadersSet.size * 2 : 10 // Multiply a bit to show 'Active' students visually vs just uploaders
+            students: uploadersSet.size > 0 ? uploadersSet.size * 2 : 10 
         });
 
         data.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
@@ -69,7 +71,22 @@ export default function HomePage() {
       }
       if (!cancelled) setLoadingFiles(false);
     };
+
+    const fetchLeaderboard = async () => {
+        try {
+            const q = query(collection(db, 'users'), orderBy('points', 'desc'), limit(4));
+            const snapshot = await getDocs(q);
+            if (cancelled) return;
+            const users = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            setTopContributors(users);
+        } catch (e) {
+            console.error('Leaderboard error:', e);
+        }
+    };
+
     fetchRecent();
+    fetchLeaderboard();
+    return () => { cancelled = true; };
     return () => { cancelled = true; };
   }, []);
 
@@ -83,10 +100,15 @@ export default function HomePage() {
   const handleDownload = async (file) => {
     if (!file.fileURL) return;
     try {
-      await updateDoc(doc(db, 'files', file.id), { downloads: increment(1) });
+      await awardDownloadPoints(file.id, file.uploaderUID, user?.uid);
       setRecentFiles(prev => prev.map(f => f.id === file.id ? { ...f, downloads: (f.downloads || 0) + 1 } : f));
     } catch (e) { console.warn('Could not update download count:', e.message); }
     window.open(file.fileURL, '_blank');
+  };
+
+  const getInitials = (name) => {
+    if (!name) return '??';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
   const userSubjects = user?.subjects || [];
@@ -199,7 +221,7 @@ export default function HomePage() {
       </section>
 
       {/* How It Works (New Section) */}
-      <section className={styles.section} style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-xl)', padding: '40px' }}>
+      <section className={styles.section} style={{ borderRadius: 'var(--radius-xl)', padding: '40px' }}>
         <ScrollReveal>
           <div className={styles.sectionHeader} style={{ textAlign: 'center', display: 'block', marginBottom: '40px' }}>
             <h2 className={styles.sectionTitle}>⚙️ How It Works</h2>
@@ -288,23 +310,26 @@ export default function HomePage() {
           </div>
         </ScrollReveal>
         <div className={styles.contributorsGrid}>
-          {[
-            { id: 1, name: 'Rahul Sharma', points: 2450, initials: 'RS' },
-            { id: 2, name: 'Priya Patel', points: 1890, initials: 'PP' },
-            { id: 3, name: 'Amit Kumar', points: 1540, initials: 'AK' },
-            { id: 4, name: 'Sneha Gupta', points: 1220, initials: 'SG' }
-          ].map((contributor, index) => (
-            <ScrollReveal key={contributor.id} delay={index * 100}>
-              <div className={styles.contributorCard}>
-                <div className={styles.contributorRank}>#{index + 1}</div>
-                <div className={styles.contributorAvatar}>{contributor.initials}</div>
-                <div className={styles.contributorInfo}>
-                  <div className={styles.contributorName}>{contributor.name}</div>
-                  <div className={styles.contributorPoints}>⭐ {contributor.points} Points</div>
+          {topContributors.length === 0 ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
+                Building leaderboard...
+            </div>
+          ) : (
+            topContributors.map((contributor, index) => (
+              <ScrollReveal key={contributor.id} delay={index * 100}>
+                <div className={styles.contributorCard}>
+                  <div className={styles.contributorRank}>#{index + 1}</div>
+                  <div className={styles.contributorAvatar}>
+                      {contributor.photoURL ? <img src={contributor.photoURL} alt="" /> : getInitials(contributor.name)}
+                  </div>
+                  <div className={styles.contributorInfo}>
+                    <div className={styles.contributorName}>{contributor.name}</div>
+                    <div className={styles.contributorPoints}>⭐ {contributor.points || 0} Points</div>
+                  </div>
                 </div>
-              </div>
-            </ScrollReveal>
-          ))}
+              </ScrollReveal>
+            ))
+          )}
         </div>
       </section>
 

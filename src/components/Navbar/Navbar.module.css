@@ -15,6 +15,15 @@
     display: flex;
     align-items: center;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+    transition: all var(--transition-fast);
+}
+
+.navbarScrolled {
+    background: rgba(10, 10, 11, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(138, 43, 226, 0.1);
 }
 
 .navInner {
@@ -202,6 +211,13 @@
     min-width: 200px;
     padding: var(--space-sm);
     animation: fadeInUp 0.2s ease-out;
+    transition: all var(--transition-fast);
+}
+
+.profileMenuScrolled {
+    background: rgba(15, 15, 20, 0.98);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
 }
 
 .profileMenuItem {

@@ -77,8 +77,9 @@ export default function SignupPage() {
             router.push('/');
         } catch (err) {
             setError(getFriendlyError(err));
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const handleGoogleLogin = async () => {

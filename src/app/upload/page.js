@@ -190,7 +190,7 @@ export default function UploadPage() {
                         <div className={styles.successIcon}><IconSparkles size={64} style={{ stroke: "var(--primary)" }} /></div>
                         <h2 className={styles.successTitle}>Upload Successful!</h2>
                         <p className={styles.successText}>
-                            Your file has been submitted for review. You earned <strong>10 points!</strong>
+                            Your file has been submitted for review. You earned <strong>50 points!</strong>
                             <br /><br />
                             <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
                                 ⏳ An admin will review your upload shortly. You can check the status on your <Link href="/dashboard" style={{ color: 'var(--primary)' }}>Dashboard</Link>.

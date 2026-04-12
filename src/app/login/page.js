@@ -15,6 +15,17 @@ export default function LoginPage() {
     const { loginWithEmail, loginWithGoogle } = useAuth();
     const router = useRouter();
 
+    const getFriendlyError = (err) => {
+        const code = err?.code || '';
+        if (code.includes('user-not-found') || code.includes('invalid-credential')) return 'No account found with this email. Please sign up first.';
+        if (code.includes('wrong-password') || code.includes('invalid-credential')) return 'Incorrect password. Please try again.';
+        if (code.includes('invalid-email')) return 'Please enter a valid email address.';
+        if (code.includes('too-many-requests')) return 'Too many failed attempts. Please wait a moment and try again.';
+        if (code.includes('network-request-failed')) return 'Network error. Check your internet connection.';
+        if (code.includes('user-disabled')) return 'This account has been disabled. Contact support.';
+        return 'Failed to sign in. Please check your credentials and try again.';
+    };
+
     const handleEmailLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -23,9 +34,10 @@ export default function LoginPage() {
             await loginWithEmail(email, password);
             router.push('/');
         } catch (err) {
-            setError(err.message || 'Failed to sign in. Check your credentials.');
+            setError(getFriendlyError(err));
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const handleGoogleLogin = async () => {

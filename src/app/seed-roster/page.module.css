@@ -1,0 +1,142 @@
+.container {
+    padding: 120px 40px 40px;
+    min-height: 100vh;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.loginStatus {
+    color: var(--success);
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    padding: 10px;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.splitLayout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.inputArea {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.inputArea label {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.textarea {
+    width: 100%;
+    height: 400px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 15px;
+    color: var(--text-primary);
+    font-family: monospace;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+.button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.status {
+    margin-top: 15px;
+    font-family: monospace;
+    color: var(--text-secondary);
+    min-height: 24px;
+}
+
+.guideArea {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 25px;
+}
+
+.guideArea h3 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.codeBlock {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 20px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 13px;
+    overflow-x: auto;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.note {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.error {
+    color: var(--error);
+    padding: 15px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 8px;
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .splitLayout {
+        grid-template-columns: 1fr;
+    }
+}

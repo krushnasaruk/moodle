@@ -6,9 +6,10 @@ import Link from 'next/link';
 import { collection, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
+import { awardDownloadPoints } from '@/lib/points';
 import { ScrollReveal } from '@/components/Animations';
 import styles from './page.module.css';
-import { IconNotes, IconUser, IconFolder, IconHat, IconDownload, IconStar, IconHeart, IconSearch, IconFlag, IconLock } from '@/components/Icons';
+import { IconNotes, IconUser, IconFolder, IconHat, IconDownload, IconStar, IconHeart, IconSearch, IconLock, IconFlag } from '@/components/Icons';
 
 const BRANCHES = ['All', 'Computer', 'IT', 'Mechanical', 'Civil', 'Electrical', 'Electronics'];
 const YEARS = ['All', '1st Year', '2nd Year', '3rd Year', '4th Year'];
@@ -25,15 +26,12 @@ function NotesContent() {
     const [search, setSearch] = useState(urlQuery);
     const [liked, setLiked] = useState({});
 
-    // Fetch approved Notes from Firestore
     useEffect(() => {
         let cancelled = false;
         const fetchNotes = async () => {
             setLoading(true);
             try {
                 if (!db) throw new Error('Firestore not initialized');
-
-                // Use simple getDocs on the whole collection to avoid composite index requirement
                 const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000));
                 const fetchPromise = getDocs(collection(db, 'files'));
                 const snapshot = await Promise.race([fetchPromise, timeout]);
@@ -55,7 +53,6 @@ function NotesContent() {
         return () => { cancelled = true; };
     }, []);
 
-    // Load saved liked state from user if available
     useEffect(() => {
         if (user?.savedNotes) {
             const likedMap = {};
@@ -81,41 +78,45 @@ function NotesContent() {
                     ? currentSaved.filter(sid => sid !== id)
                     : [...currentSaved, id];
                 await updateDoc(userRef, { savedNotes: newSaved });
-            } catch (e) {
-                console.warn('Could not save like:', e.message);
-            }
+            } catch (e) { console.warn('Could not save like:', e.message); }
         }
     };
 
     const handleDownload = async (note) => {
         if (!note.fileURL) return;
         try {
-            await updateDoc(doc(db, 'files', note.id), {
-                downloads: increment(1)
-            });
+            await awardDownloadPoints(note.id, note.uploaderUID, user?.uid);
             setNotes(prev => prev.map(n => n.id === note.id ? { ...n, downloads: (n.downloads || 0) + 1 } : n));
-        } catch (e) {
-            console.warn('Could not update download count:', e.message);
-        }
+        } catch (e) { console.warn('Count err:', e.message); }
         window.open(note.fileURL, '_blank');
     };
 
+    const handleReport = async (note) => {
+        if (!confirm('Flag this note as misplaced or incorrect? Admins will be notified.')) return;
+        try {
+            await updateDoc(doc(db, 'files', note.id), { 
+                isReported: true, 
+                reportCount: increment(1) 
+            });
+            alert('Thank you! This note has been flagged for admin review.');
+        } catch (e) { 
+            console.warn('Report err:', e.message); 
+            alert('Failed to report file. Please try again.');
+        }
+    };
+
     if (authLoading) {
-        return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Authenticating...</div>;
+        return <div className="container" style={{ paddingTop: '200px', textAlign: 'center', color: 'var(--text-muted)' }}>Authenticating...</div>;
     }
 
     if (!user) {
         return (
             <div className={styles.pageWrapper}>
-                <div className={styles.pageInner}>
-                    <div style={{ textAlign: 'center', padding: 'var(--space-3xl)', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', maxWidth: '440px', margin: 'var(--space-3xl) auto', backdropFilter: 'blur(20px)' }}>
-                        <div style={{ color: 'var(--primary)', marginBottom: 'var(--space-lg)' }}><IconLock size={64} /></div>
-                        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>Sign in to Access</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-xl)' }}>You must be logged in to explore the Notes library.</p>
-                        <Link href="/login" style={{ display: 'inline-block', padding: '12px 32px', background: 'var(--primary)', color: '#fff', borderRadius: 'var(--radius-full)', fontWeight: 700, textDecoration: 'none', transition: 'all 0.3s ease' }}>
-                            Go to Login
-                        </Link>
-                    </div>
+                <div className={`container ${styles.stateWrapper} glass-panel`}>
+                    <div className={styles.stateIcon}><IconLock size={64} /></div>
+                    <h2 className={styles.stateTitle}>Locked Vault</h2>
+                    <p className={styles.stateDesc}>You must be signed in to access the premium notes repository.</p>
+                    <Link href="/login" className="btn btn-primary">Authenticate Now</Link>
                 </div>
             </div>
         );
@@ -123,94 +124,129 @@ function NotesContent() {
 
     return (
         <div className={styles.pageWrapper}>
-            <div className={styles.pageInner}>
-                <ScrollReveal>
-                    <div className={styles.pageHeader}>
-                        <h1 className={styles.pageTitle}><IconNotes size={40} /> Notes</h1>
-                        <p className={styles.pageDesc}>Browse and download study notes organized by subject, branch, and year.</p>
-                    </div>
-                </ScrollReveal>
+            <div className={styles.heroBanner}>
+                <div className="container">
+                    <ScrollReveal>
+                        <h1 className={styles.heroTitle}>Notes Repository</h1>
+                        <p className={styles.heroSubtitle}>Premium study materials, beautifully organized.</p>
+                    </ScrollReveal>
+                </div>
+            </div>
 
+            <div className="container" style={{ position: 'relative', zIndex: 10 }}>
                 <ScrollReveal delay={100}>
-                    <div className={styles.filters}>
+                    <div className={styles.filterBar}>
                         <div className={styles.filterGroup}>
                             <select className={styles.filterSelect} value={branch} onChange={(e) => setBranch(e.target.value)}>
-                                {BRANCHES.map(b => <option key={b} value={b}>{b === 'All' ? '🏫 All Branches' : b}</option>)}
+                                {BRANCHES.map(b => <option key={b} value={b}>{b === 'All' ? 'All Branches' : b}</option>)}
                             </select>
+                            <span style={{ color: 'var(--border)' }}>|</span>
                             <select className={styles.filterSelect} value={year} onChange={(e) => setYear(e.target.value)}>
-                                {YEARS.map(y => <option key={y} value={y}>{y === 'All' ? '🎓 All Years' : y}</option>)}
+                                {YEARS.map(y => <option key={y} value={y}>{y === 'All' ? 'All Years' : y}</option>)}
                             </select>
                         </div>
-                        <input
-                            type="text"
-                            className={styles.searchInput}
-                            placeholder="Search notes by title or subject..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
+                        <div className={styles.searchWrapper}>
+                            <IconSearch size={18} className={styles.searchIcon} />
+                            <input
+                                type="text"
+                                className={styles.searchInput}
+                                placeholder="Search by title or subject..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
                     </div>
                 </ScrollReveal>
 
                 {loading ? (
-                    <div className={styles.emptyState}>
-                        <div className={styles.emptyText}>Loading notes...</div>
+                    <div className={`container ${styles.stateWrapper}`}>
+                        <div style={{ color: 'var(--text-muted)' }}>Synchronizing databases...</div>
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className={styles.emptyState}>
-                        <div className={styles.emptyIcon}><IconSearch size={64} /></div>
-                        <div className={styles.emptyText}>No notes found</div>
-                        <div className={styles.emptySubtext}>{notes.length === 0 ? 'No approved notes yet. Be the first to upload!' : 'Try adjusting your filters or search query'}</div>
+                    <div className={`container ${styles.stateWrapper} glass-panel`}>
+                        <div className={styles.stateIcon}><IconSearch size={64} /></div>
+                        <h3 className={styles.stateTitle}>No documents found</h3>
+                        <p className={styles.stateDesc}>We couldn't find any resources matching those exact filters.</p>
                     </div>
                 ) : (
-                    <div className={styles.listContainer}>
+                    <div className={styles.gridContainer}>
                         {filtered.map((note, i) => (
-                            <ScrollReveal key={note.id} delay={i * 80}>
-                                <div className={`${styles.rowCard} hover-lift`}>
+                            <ScrollReveal key={note.id} delay={i * 40}>
+                                <div className={`${styles.glassCard} glass-panel`}>
+                                    
                                     <div className={styles.cardHeader}>
-                                        <div className={styles.cardIconArea}>
-                                            <IconNotes size={24} className={styles.fileIcon} />
-                                            <span className={`${styles.cardBadge} ${styles.badgeNotes}`}>Notes</span>
+                                        <div className={styles.iconWrapper}>
+                                            <IconNotes size={26} />
                                         </div>
-                                        <div className={styles.rating}><IconStar size={16} /> {note.rating > 0 ? note.rating : 'New'}</div>
+                                        <div className={styles.typeBadge}>Notes</div>
                                     </div>
 
                                     <div className={styles.cardMain}>
                                         <h3 className={styles.cardTitle}>{note.title}</h3>
+                                        <div className={styles.cardSubject}>{note.subject}</div>
+                                        
                                         <div className={styles.cardMeta}>
-                                            <span className={styles.metaItem}><IconUser size={14}/> <strong>{note.uploader}</strong></span>
-                                            <span className={styles.metaItem}><IconFolder size={14}/> {note.subject}</span>
-                                            <span className={styles.metaItem}><IconHat size={14}/> {note.year}</span>
-                                            <span className={styles.metaItem}><IconDownload size={14}/> {note.downloads || 0}</span>
+                                            <div className={styles.metaItem}>
+                                                <IconHat size={16} color="var(--text-muted)" />
+                                                <strong>{note.branch}</strong> • {note.year}
+                                            </div>
+                                            <div className={styles.metaItem}>
+                                                <IconUser size={16} color="var(--text-muted)" />
+                                                <strong>{note.uploader}</strong>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className={styles.cardActions}>
-                                        <div className={styles.actionRow}>
-                                            <button
-                                                className={styles.likeBtn}
-                                                onClick={() => toggleLike(note.id)}
-                                                title="Save this note"
+                                    <div className={styles.cardFooter}>
+                                        <div className={styles.statGroup}>
+                                            <div className={styles.statItem} title="Downloads">
+                                                <IconDownload size={16} color="var(--primary-light)" />
+                                                {note.downloads || 0}
+                                            </div>
+                                            <div className={styles.statItem} title="Rating">
+                                                <IconStar size={16} color="var(--accent)" />
+                                                {note.rating || 'New'}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className={styles.actionGroup}>
+                                            <button 
+                                                className={styles.btnAction} 
+                                                onClick={() => handleReport(note)}
+                                                title="Report Misplaced File"
                                             >
-                                                <IconHeart size={18} fill={liked[note.id] ? "#ef4444" : "none"} stroke={liked[note.id] ? "#ef4444" : "currentColor"} />
+                                                <IconFlag size={18} />
                                             </button>
-                                            <button className={styles.downloadBtn} onClick={() => handleDownload(note)}>
-                                                <IconDownload size={18} /> Download
+                                            <button 
+                                                className={styles.btnAction} 
+                                                onClick={() => toggleLike(note.id)}
+                                                title="Save Note"
+                                                style={{ color: liked[note.id] ? 'var(--accent)' : 'inherit' }}
+                                            >
+                                                <IconHeart size={20} fill={liked[note.id] ? "currentColor" : "none"} />
+                                            </button>
+                                            <button 
+                                                className={styles.btnDownload} 
+                                                onClick={() => handleDownload(note)}
+                                            >
+                                                <IconDownload size={18} /> Get
                                             </button>
                                         </div>
                                     </div>
+
                                 </div>
                             </ScrollReveal>
                         ))}
                     </div>
                 )}
             </div>
-        </div >
+        </div>
     );
 }
 
 export default function NotesPage() {
     return (
-        <Suspense fallback={<div style={{ padding: '120px 24px', textAlign: 'center' }}>Loading...</div>}>
+        <Suspense fallback={<div className="container" style={{ paddingTop: '200px', textAlign: 'center' }}>Loading Module...</div>}>
             <NotesContent />
         </Suspense>
     );

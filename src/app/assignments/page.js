@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { collection, getDocs, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
+import { awardDownloadPoints } from '@/lib/points';
 import { ScrollReveal } from '@/components/Animations';
 import styles from '../notes/page.module.css';
-import { IconAssignment, IconUser, IconFolder, IconHat, IconDownload, IconStar, IconSearch, IconLock } from '@/components/Icons';
+import { IconAssignment, IconUser, IconFolder, IconHat, IconDownload, IconStar, IconHeart, IconSearch, IconLock, IconFlag } from '@/components/Icons';
 
 const SUBJECTS = ['All', 'DBMS', 'DSA', 'OS', 'CN', 'SE', 'ML', 'Mathematics'];
 
@@ -52,28 +54,38 @@ export default function AssignmentsPage() {
     const handleDownload = async (item) => {
         if (!item.fileURL) return;
         try {
-            await updateDoc(doc(db, 'files', item.id), { downloads: increment(1) });
+            await awardDownloadPoints(item.id, item.uploaderUID, user?.uid);
             setAssignments(prev => prev.map(a => a.id === item.id ? { ...a, downloads: (a.downloads || 0) + 1 } : a));
-        } catch (e) { console.warn('Could not update download count:', e.message); }
+        } catch (e) { console.warn('Count err:', e.message); }
         window.open(item.fileURL, '_blank');
     };
 
+    const handleReport = async (item) => {
+        if (!confirm('Flag this assignment as misplaced or incorrect? Admins will be notified.')) return;
+        try {
+            await updateDoc(doc(db, 'files', item.id), { 
+                isReported: true, 
+                reportCount: increment(1) 
+            });
+            alert('Thank you! This assignment has been flagged for admin review.');
+        } catch (e) { 
+            console.warn('Report err:', e.message); 
+            alert('Failed to report file. Please try again.');
+        }
+    };
+
     if (authLoading) {
-        return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Authenticating...</div>;
+        return <div className="container" style={{ paddingTop: '200px', textAlign: 'center', color: 'var(--text-muted)' }}>Authenticating...</div>;
     }
 
     if (!user) {
         return (
             <div className={styles.pageWrapper}>
-                <div className={styles.pageInner}>
-                    <div style={{ textAlign: 'center', padding: 'var(--space-3xl)', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-xl)', maxWidth: '440px', margin: 'var(--space-3xl) auto', backdropFilter: 'blur(20px)' }}>
-                        <div style={{ color: 'var(--primary)', marginBottom: 'var(--space-lg)' }}><IconLock size={64} /></div>
-                        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-sm)' }}>Sign in to Access</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-xl)' }}>You must be logged in to download Assignments.</p>
-                        <Link href="/login" style={{ display: 'inline-block', padding: '12px 32px', background: 'var(--primary)', color: '#fff', borderRadius: 'var(--radius-full)', fontWeight: 700, textDecoration: 'none', transition: 'all 0.3s ease' }}>
-                            Go to Login
-                        </Link>
-                    </div>
+                <div className={`container ${styles.stateWrapper} glass-panel`}>
+                    <div className={styles.stateIcon}><IconLock size={64} /></div>
+                    <h2 className={styles.stateTitle}>Locked Vault</h2>
+                    <p className={styles.stateDesc}>You must be signed in to access the assignments archive.</p>
+                    <Link href="/login" className="btn btn-primary">Authenticate Now</Link>
                 </div>
             </div>
         );
@@ -81,61 +93,105 @@ export default function AssignmentsPage() {
 
     return (
         <div className={styles.pageWrapper}>
-            <div className={styles.pageInner}>
-                <ScrollReveal>
-                    <div className={styles.pageHeader}>
-                        <h1 className={styles.pageTitle}><IconAssignment size={40} /> Assignments</h1>
-                        <p className={styles.pageDesc}>Ready-to-submit assignments with solutions — code and PDFs.</p>
-                    </div>
-                </ScrollReveal>
+            <div className={styles.heroBanner}>
+                <div className="container">
+                    <ScrollReveal>
+                        <h1 className={styles.heroTitle}>Assignments Archive</h1>
+                        <p className={styles.heroSubtitle}>Premium ready-to-submit solutions and lab manuals.</p>
+                    </ScrollReveal>
+                </div>
+            </div>
 
+            <div className="container" style={{ position: 'relative', zIndex: 10 }}>
                 <ScrollReveal delay={100}>
-                    <div className={styles.filters}>
+                    <div className={styles.filterBar}>
                         <div className={styles.filterGroup}>
                             <select className={styles.filterSelect} value={subject} onChange={(e) => setSubject(e.target.value)}>
-                                {SUBJECTS.map(s => <option key={s} value={s}>{s === 'All' ? '📁 All Subjects' : s}</option>)}
+                                {SUBJECTS.map(s => <option key={s} value={s}>{s === 'All' ? 'All Subjects' : s}</option>)}
                             </select>
                         </div>
-                        <input type="text" className={styles.searchInput} placeholder="Search assignments..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                        <div className={styles.searchWrapper}>
+                            <IconSearch size={18} className={styles.searchIcon} />
+                            <input
+                                type="text"
+                                className={styles.searchInput}
+                                placeholder="Search assignments..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
                     </div>
                 </ScrollReveal>
 
                 {loading ? (
-                    <div className={styles.emptyState}><div className={styles.emptyText}>Loading assignments...</div></div>
+                    <div className={`container ${styles.stateWrapper}`}>
+                        <div style={{ color: 'var(--text-muted)' }}>Synchronizing databases...</div>
+                    </div>
                 ) : filtered.length === 0 ? (
-                    <div className={styles.emptyState}>
-                        <div className={styles.emptyIcon}><IconSearch size={64} /></div>
-                        <div className={styles.emptyText}>No assignments found</div>
-                        <div className={styles.emptySubtext}>{assignments.length === 0 ? 'No approved assignments yet. Upload some!' : 'Try adjusting your filters'}</div>
+                    <div className={`container ${styles.stateWrapper} glass-panel`}>
+                        <div className={styles.stateIcon}><IconSearch size={64} /></div>
+                        <h3 className={styles.stateTitle}>No documents found</h3>
+                        <p className={styles.stateDesc}>We couldn't find any resources matching those exact filters.</p>
                     </div>
                 ) : (
-                    <div className={styles.listContainer}>
+                    <div className={styles.gridContainer}>
                         {filtered.map((item, i) => (
-                            <ScrollReveal key={item.id} delay={i * 80}>
-                                <div className={`${styles.rowCard} hover-lift`}>
+                            <ScrollReveal key={item.id} delay={i * 40}>
+                                <div className={`${styles.glassCard} glass-panel`}>
+                                    
                                     <div className={styles.cardHeader}>
-                                        <div className={styles.cardIconArea}>
-                                            <IconAssignment size={24} className={styles.fileIcon} />
-                                            <span className={`${styles.cardBadge} ${styles.badgeAssignment}`}>Assignment</span>
+                                        <div className={styles.iconWrapper} style={{ background: 'linear-gradient(135deg, rgba(255, 0, 127, 0.2), rgba(138, 43, 226, 0.1))', color: 'var(--accent)' }}>
+                                            <IconAssignment size={26} />
                                         </div>
-                                        <div className={styles.rating}><IconStar size={16} /> {item.rating > 0 ? item.rating : 'New'}</div>
+                                        <div className={styles.typeBadge} style={{ color: 'var(--accent)' }}>Assignment</div>
                                     </div>
+
                                     <div className={styles.cardMain}>
                                         <h3 className={styles.cardTitle}>{item.title}</h3>
+                                        <div className={styles.cardSubject} style={{ color: 'var(--accent)' }}>{item.subject}</div>
+                                        
                                         <div className={styles.cardMeta}>
-                                            <span className={styles.metaItem}><IconUser size={14}/> <strong>{item.uploader}</strong></span>
-                                            <span className={styles.metaItem}><IconFolder size={14}/> {item.subject}</span>
-                                            <span className={styles.metaItem}><IconHat size={14}/> {item.year}</span>
-                                            <span className={styles.metaItem}><IconDownload size={14}/> {item.downloads || 0}</span>
+                                            <div className={styles.metaItem}>
+                                                <IconHat size={16} color="var(--text-muted)" />
+                                                <strong>{item.branch}</strong> • {item.year}
+                                            </div>
+                                            <div className={styles.metaItem}>
+                                                <IconUser size={16} color="var(--text-muted)" />
+                                                <strong>{item.uploader}</strong>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className={styles.cardActions}>
-                                        <div className={styles.actionRow}>
-                                            <button className={styles.downloadBtn} onClick={() => handleDownload(item)}>
-                                                <IconDownload size={18} /> Download
+
+                                    <div className={styles.cardFooter}>
+                                        <div className={styles.statGroup}>
+                                            <div className={styles.statItem} title="Downloads">
+                                                <IconDownload size={16} color="var(--accent)" />
+                                                {item.downloads || 0}
+                                            </div>
+                                            <div className={styles.statItem} title="Rating">
+                                                <IconStar size={16} color="var(--primary-light)" />
+                                                {item.rating || 'New'}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className={styles.actionGroup}>
+                                            <button 
+                                                className={styles.btnAction} 
+                                                onClick={() => handleReport(item)}
+                                                title="Report Misplaced File"
+                                            >
+                                                <IconFlag size={18} />
+                                            </button>
+                                            <button 
+                                                className={styles.btnDownload} 
+                                                onClick={() => handleDownload(item)}
+                                                style={{ background: 'var(--gradient-premium)' }}
+                                            >
+                                                <IconDownload size={18} /> Get
                                             </button>
                                         </div>
                                     </div>
+
                                 </div>
                             </ScrollReveal>
                         ))}
