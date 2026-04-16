@@ -132,7 +132,7 @@ export default function HomePage() {
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <ScrollReveal delay={0}>
-            <span className={styles.heroTag}>🚀 StudyHub — The Student OS</span>
+            <span className={styles.heroTag}>🚀 Sutras — The Student OS</span>
           </ScrollReveal>
 
           <h1 className={styles.heroTitle}>
@@ -188,11 +188,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Choose StudyHub? */}
+      {/* Why Choose Sutras? */}
       <section className={styles.section}>
         <ScrollReveal>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>✨ Why Choose StudyHub?</h2>
+            <h2 className={styles.sectionTitle}>✨ Why Choose Sutras?</h2>
           </div>
         </ScrollReveal>
         <div className={styles.featuresGrid}>
@@ -360,14 +360,19 @@ export default function HomePage() {
       {/* Footer */}
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
-          <div className={styles.footerLogo}>📚 StudyHub</div>
+          <div className={styles.footerLogo}>📚 Sutras</div>
           <div className={styles.footerLinks}>
             <Link href="/notes" className={styles.footerLink}>Notes</Link>
             <Link href="/pyqs" className={styles.footerLink}>PYQs</Link>
             <Link href="/assignments" className={styles.footerLink}>Assignments</Link>
             <Link href="/upload" className={styles.footerLink}>Upload</Link>
           </div>
-          <div className={styles.footerLink}>© 2026 StudyHub. All rights reserved.</div>
+          <div className={styles.footerLinks}>
+            <Link href="/privacy-policy" className={styles.footerLink}>Privacy Policy</Link>
+            <Link href="/terms-of-service" className={styles.footerLink}>Terms of Service</Link>
+            <Link href="/cookie-policy" className={styles.footerLink}>Cookie Policy</Link>
+          </div>
+          <div className={styles.footerLink}>© 2026 Sutras. All rights reserved.</div>
         </div>
       </footer>
     </>

@@ -7,12 +7,14 @@ import { db, storage } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import styles from './page.module.css';
 import { IconLock, IconSparkles, IconUpload, IconFolder, IconNotes } from '@/components/Icons';
+import ConfettiExplosion from '@/components/ConfettiExplosion';
 import Link from 'next/link';
+import { getAllSubjects } from '@/lib/subjectMap';
 
 const BRANCHES = ['Computer', 'IT', 'Mechanical', 'Civil', 'Electrical', 'Electronics'];
 const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 const TYPES = ['Notes', 'PYQ', 'Assignment'];
-const SUBJECTS = ['DBMS', 'OS', 'DSA', 'CN', 'SE', 'TOC', 'AI', 'ML', 'Mathematics', 'Physics', 'Chemistry', 'English', 'Other'];
+const SUBJECTS = getAllSubjects();
 
 export default function UploadPage() {
     const { user } = useAuth();
@@ -185,6 +187,7 @@ export default function UploadPage() {
     if (success) {
         return (
             <div className={styles.pageWrapper}>
+                <ConfettiExplosion active={true} />
                 <div className={styles.pageInner}>
                     <div className={styles.successMsg}>
                         <div className={styles.successIcon}><IconSparkles size={64} style={{ stroke: "var(--primary)" }} /></div>

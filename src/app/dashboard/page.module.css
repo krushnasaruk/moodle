@@ -218,6 +218,7 @@
 /* Sub-classes for specific Tile widths */
 .uploadsTile { grid-column: 1 / -1; }
 .classHubTile { grid-column: 1 / -1; }
+.editingTile { grid-column: 1 / -1; }
 
 .bentoTile {
     padding: var(--space-xl);
@@ -365,68 +366,86 @@
 /* Form specific styling inside bentos */
 .editGrid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-xl);
+    margin-bottom: var(--space-2xl);
 }
 
 .editField {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 }
 
 .editField label {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 700;
     text-transform: uppercase;
     color: var(--text-muted);
+    letter-spacing: 0.05em;
 }
 
 .editField select, .editField input {
-    padding: 10px 14px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border);
+    padding: 14px 16px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
     color: var(--text-primary);
-    font-size: 0.875rem;
-    transition: box-shadow var(--transition-fast);
+    font-size: 0.95rem;
+    transition: all var(--transition-fast);
 }
 
 .editField select option {
     background: var(--bg-main);
+    color: var(--text-primary);
 }
 
 .editField select:focus, .editField input:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 2px var(--primary-glow);
+    box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.4);
+    background: rgba(0, 0, 0, 0.6);
 }
 
 .editActions {
     display: flex;
     gap: var(--space-md);
     justify-content: flex-end;
+    padding-top: var(--space-lg);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .cancelBtn {
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 24px;
+    background: transparent;
     color: var(--text-secondary);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-md);
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.cancelBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
 }
 
 .saveBtn {
-    padding: 10px 24px;
+    padding: 12px 28px;
     background: var(--gradient-brand);
     color: #fff;
     border: none;
     border-radius: var(--radius-md);
     font-weight: 700;
     cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: 0 4px 15px var(--primary-glow);
+}
+
+.saveBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--primary-glow);
 }
 
 /* ======================================================== */
@@ -579,21 +598,226 @@
     100% { transform: scale(1); }
 }
 
+.streakModule {
+    background: rgba(30,30,40, 0.4);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.streakBadge {
+    font-weight: 800;
+    color: #f59e0b; /* Fire color */
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.timeline {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    height: 12px;
+}
+
+.timelineDot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    opacity: 0.8;
+}
+
+.dot_present { background-color: var(--success); box-shadow: 0 0 8px rgba(34, 197, 94, 0.5); }
+.dot_absent { background-color: var(--error); box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+.dot_late { background-color: var(--warning); box-shadow: 0 0 8px rgba(245, 158, 11, 0.5); }
+.dot_excused { background-color: var(--primary-light); box-shadow: 0 0 8px rgba(138, 43, 226, 0.5); }
+
+/* --- Leave Request Modals and Pills --- */
+.request_pending { border-left: 4px solid var(--warning) !important; }
+.request_approved { border-left: 4px solid var(--success) !important; opacity: 0.7; }
+.request_rejected { border-left: 4px solid var(--error) !important; opacity: 0.5;}
+
+.statusPill {
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+}
+
+.pill_pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+.pill_approved { background: rgba(34, 197, 94, 0.1); color: var(--success); border: 1px solid rgba(34, 197, 94, 0.3); }
+.pill_rejected { background: rgba(239, 68, 68, 0.1); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modalContent {
+    background: rgba(20, 20, 25, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUpFade 0.3s ease-out;
+}
+
+.modalContentLarge {
+    max-width: 750px;
+}
+
+@keyframes slideUpFade {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.modalActions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btnSecondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btnSecondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
 .btnBounty {
     display: inline-block;
     padding: 12px 28px;
-    background: var(--gradient-brand);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
     color: white;
-    font-weight: 800;
-    border-radius: var(--radius-full);
     text-decoration: none;
-    box-shadow: 0 4px 20px var(--primary-glow);
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
     transition: all 0.3s ease;
 }
-
 .btnBounty:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(138, 43, 226, 0.6);
+}
+
+/* --- Live Session Bio-Metric Scanner --- */
+.liveSessionBanner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(0, 229, 255, 0.1);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    padding: 16px 20px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+}
+
+.livePulseGeo {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--neo);
+    box-shadow: 0 0 10px var(--neo);
+    animation: neon-pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes neon-pulse {
+    0% { transform: scale(0.9); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); }
+    70% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
+    100% { transform: scale(0.9); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+}
+
+.btnVerifyGeo {
+    margin-left: auto;
+    background: var(--neo);
+    color: #000;
+    font-weight: 800;
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+    transition: all 0.2s;
+}
+.btnVerifyGeo:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px var(--primary-glow), inset 0 0 10px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.6);
+}
+
+.scannerModal {
+    text-align: center;
+}
+
+.webcamWrapper {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin: 0 auto 20px;
+    border: 2px solid rgba(0, 229, 255, 0.3);
+}
+
+.webcamVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.scannerLine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--neo);
+    box-shadow: 0 0 15px 4px rgba(0, 229, 255, 0.5);
+    animation: scanLine 3s infinite linear;
+    z-index: 2;
+}
+
+@keyframes scanLine {
+    0% { top: 0; }
+    50% { top: 100%; }
+    100% { top: 0; }
+}
+
+.scanStatusBox {
+    background: rgba(0,0,0,0.5);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    min-height: 50px;
 }
 
 .emptyState {
@@ -767,10 +991,117 @@
     border-radius: var(--radius-lg);
 }
 
+/* ======================================================== */
+/* AVATAR EDIT OVERLAY */
+/* ======================================================== */
+.avatarEditOverlay {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    border: 2px solid rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 3;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    padding: 0;
+    color: white;
+}
+
+.avatarEditOverlay:hover {
+    transform: scale(1.15);
+    box-shadow: 0 6px 20px rgba(138, 43, 226, 0.5);
+}
+
+/* ======================================================== */
+/* AVATAR UPLOAD SECTION (inside edit form) */
+/* ======================================================== */
+.avatarUploadSection {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 30px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-xl);
+}
+
+.avatarUploadPreview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.2);
+}
+
+.avatarUploadPreview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.avatarUploadFallback {
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-brand);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 2.5rem;
+    font-family: var(--font-heading);
+}
+
+.avatarUploadControls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.avatarUploadBtn {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    align-self: flex-start;
+}
+
+.avatarUploadBtn:hover {
+    background: rgba(138, 43, 226, 0.2);
+    border-color: var(--primary-light);
+    color: var(--primary-light);
+}
+
+.avatarUploadHint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
     .bentoGrid { grid-template-columns: 1fr; }
     .hubGrid { grid-template-columns: 1fr; }
     .profileHeader { flex-direction: column; text-align: center; padding: var(--space-2xl); }
     .progressContainer { margin: 24px auto 0; }
+    .avatarUploadSection { flex-direction: column; text-align: center; }
+    .avatarUploadBtn { align-self: center; }
 }

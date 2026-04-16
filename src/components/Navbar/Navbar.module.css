@@ -1,29 +1,27 @@
 .navbar {
     position: fixed;
     top: var(--space-md);
+    bottom: auto;
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
     max-width: var(--max-width);
     height: 64px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: var(--glass-border);
+    background: rgba(15, 15, 20, 0.6);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-full);
     z-index: 1000;
     display: flex;
     align-items: center;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
-    transition: all var(--transition-fast);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .navbarScrolled {
-    background: rgba(10, 10, 11, 0.95);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(138, 43, 226, 0.1);
+    background: rgba(10, 10, 11, 0.9);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(138, 43, 226, 0.15);
 }
 
 .navInner {
@@ -32,6 +30,7 @@
     justify-content: space-between;
     width: 100%;
     padding: 0 var(--space-lg);
+    gap: 8px;
 }
 
 .logo {
@@ -61,9 +60,14 @@
 
 .searchWrapper {
     flex: 1;
-    max-width: 400px;
-    margin: 0 var(--space-xl);
+    max-width: 380px;
+    margin: 0 var(--space-lg);
     position: relative;
+    transition: all 0.3s ease;
+}
+
+.searchWrapper:focus-within {
+    max-width: 430px;
 }
 
 .searchInput {
@@ -103,24 +107,39 @@
 }
 
 .navLink {
-    padding: 6px 12px;
+    padding: 8px 14px;
     border-radius: var(--radius-full);
-    font-size: 0.813rem;
-    font-weight: 500;
+    font-size: 0.875rem;
+    font-weight: 600;
     color: var(--text-secondary);
-    transition: all var(--transition-fast);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     text-decoration: none;
+    position: relative;
 }
 
 .navLink:hover {
-    color: var(--text-primary);
-    background: var(--bg-input);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .navLinkActive {
     color: var(--primary-light);
-    background: rgba(157, 78, 221, 0.15);
-    font-weight: 600;
+    background: rgba(138, 43, 226, 0.15);
+    font-weight: 700;
+    box-shadow: 0 0 12px rgba(138, 43, 226, 0.2);
+}
+
+.navLinkActive::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 2px;
+    background: var(--primary-light);
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 8px var(--primary-glow);
 }
 
 .navActions {
@@ -204,20 +223,19 @@
     position: absolute;
     top: calc(100% + 12px);
     right: 0;
-    background: var(--bg-elevated);
-    border: var(--glass-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-card);
-    min-width: 200px;
+    background: rgba(20, 20, 25, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    min-width: 220px;
     padding: var(--space-sm);
-    animation: fadeInUp 0.2s ease-out;
-    transition: all var(--transition-fast);
+    animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top right;
 }
 
 .profileMenuScrolled {
-    background: rgba(15, 15, 20, 0.98);
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    background: rgba(10, 10, 15, 0.98);
 }
 
 .profileMenuItem {
@@ -272,17 +290,16 @@
 
 /* Mobile */
 @media (max-width: 900px) {
-
-    .navLinks,
+    .navLinks {
+        display: none;
+    }
     .searchWrapper {
         display: none;
     }
-
     .navbar {
         width: 95%;
         top: 10px;
     }
-
     .uploadBtn span {
         display: none;
     }

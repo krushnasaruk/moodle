@@ -106,7 +106,7 @@ export default function SignupPage() {
                     <>
                         <div className={styles.authHeader}>
                             <h1 className={styles.title}>Create Account</h1>
-                            <p className={styles.subtitle}>Join StudyHub to share and access notes.</p>
+                            <p className={styles.subtitle}>Join Sutras to share and access notes.</p>
                         </div>
 
                         {error && <div className={styles.errorAlert}>{error}</div>}

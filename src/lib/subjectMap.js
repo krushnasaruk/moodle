@@ -1,5 +1,5 @@
 /**
- * Centralized Subject Mapping
+ * Centralized Subject Mapping for SPPU (2019 Pattern)
  * Branch → Year → Semester → Subjects[]
  */
 
@@ -10,6 +10,7 @@ export const COLLEGES = [
     'PICT Pune',
     'COEP Technological University',
     'Savitribai Phule Pune University',
+    'Dhole Patil College of Engineering Pune',
     'Other',
 ];
 
@@ -24,66 +25,86 @@ export const SEMESTERS = {
     '4th Year': ['Sem 7', 'Sem 8'],
 };
 
+// First Year (FE) is Common for all branches in SPPU
+const FESem1 = [
+    'Engineering Mathematics I', 
+    'Physics', 
+    'Systems in Mechanical Engineering', 
+    'BEE', 
+    'FPL', 
+    'PPS', 
+    'IKS', 
+    'Workshop Practice'
+];
+const FESem2 = [
+    'Engineering Mathematics II', 
+    'Chemistry', 
+    'Basic Electronics Engineering', 
+    'Engineering Mechanics', 
+    'Engineering Graphics', 
+    'Project Based Learning'
+];
+
 export const SUBJECT_MAP = {
     Computer: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
-        'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Communication Skills', 'Environmental Science'],
-        'Sem 3': ['DBMS', 'Data Structures', 'Digital Electronics', 'Engineering Mathematics III', 'Discrete Mathematics'],
-        'Sem 4': ['Operating Systems', 'Computer Networks', 'Theory of Computation', 'Computer Organization', 'Engineering Mathematics IV'],
-        'Sem 5': ['Software Engineering', 'Machine Learning', 'Web Technology', 'Microprocessor', 'Elective I'],
-        'Sem 6': ['Compiler Design', 'Cloud Computing', 'Artificial Intelligence', 'Cryptography', 'Elective II'],
-        'Sem 7': ['Deep Learning', 'Big Data Analytics', 'IoT', 'Project I', 'Elective III'],
-        'Sem 8': ['Blockchain', 'Cyber Security', 'Project II', 'Elective IV'],
+        'Sem 1': FESem1,
+        'Sem 2': FESem2,
+        'Sem 3': ['Discrete Mathematics', 'Fundamentals of Data Structures', 'Object Oriented Programming', 'Computer Graphics', 'Digital Electronics and Logic Design', 'Data Structures Laboratory', 'OOP and Computer Graphics Laboratory', 'Digital Electronics Laboratory'],
+        'Sem 4': ['Engineering Mathematics III', 'Data Structures and Algorithms', 'Software Engineering', 'Microprocessor', 'Principles of Programming Languages', 'DSA Laboratory', 'Microprocessor Laboratory', 'Project Based Learning II'],
+        'Sem 5': ['Database Management Systems', 'Theory of Computation', 'Systems Programming and Operating System', 'Computer Networks and Security', 'Elective I', 'Database Management Systems Laboratory', 'Systems Programming and Operating System Laboratory', 'Laboratory Practice I'],
+        'Sem 6': ['Data Science and Big Data Analytics', 'Web Technology', 'Artificial Intelligence', 'Elective II', 'Internship', 'Data Science and Big Data Analytics Laboratory', 'Web Technology Laboratory', 'Laboratory Practice II'],
+        'Sem 7': ['Design and Analysis of Algorithms', 'Machine Learning', 'Blockchain Technology', 'Elective III', 'Elective IV', 'Laboratory Practice III', 'Laboratory Practice IV', 'Project Work Stage I'],
+        'Sem 8': ['High Performance Computing', 'Deep Learning', 'Elective V', 'Elective VI', 'Laboratory Practice V', 'Laboratory Practice VI', 'Project Work Stage II'],
     },
     IT: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
-        'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Communication Skills', 'Environmental Science'],
-        'Sem 3': ['DBMS', 'Data Structures', 'Digital Electronics', 'Engineering Mathematics III', 'Web Development'],
-        'Sem 4': ['Operating Systems', 'Computer Networks', 'Software Engineering', 'Computer Organization', 'Engineering Mathematics IV'],
-        'Sem 5': ['Cloud Computing', 'Machine Learning', 'Information Security', 'Mobile Computing', 'Elective I'],
-        'Sem 6': ['Data Science', 'Artificial Intelligence', 'DevOps', 'Distributed Systems', 'Elective II'],
-        'Sem 7': ['IoT', 'NLP', 'Project I', 'Elective III', 'Elective IV'],
-        'Sem 8': ['Blockchain', 'Project II', 'Elective V'],
+        'Sem 1': FESem1,
+        'Sem 2': FESem2,
+        'Sem 3': ['Discrete Mathematics', 'Logic Design and Computer Organization', 'Data Structures and Algorithms', 'Object Oriented Programming', 'Basic of Computer Network', 'Data Structure and Algorithm Laboratory', 'OOP Laboratory', 'Computer Network Laboratory'],
+        'Sem 4': ['Engineering Mathematics III', 'Processor Architecture', 'Database Management System', 'Computer Graphics', 'Software Engineering', 'Processor Architecture Laboratory', 'DBMS Laboratory', 'Computer Graphics Laboratory', 'Project Based Learning'],
+        'Sem 5': ['Theory of Computation', 'Operating Systems', 'Machine Learning', 'Human Computer Interaction', 'Elective I', 'Operating Systems Laboratory', 'Machine Learning Laboratory', 'Laboratory Practice I'],
+        'Sem 6': ['Computer Networks and Security', 'Data Science and Big Data Analytics', 'Web Application Development', 'Elective II', 'Internship', 'Computer Network and Security Laboratory', 'DSBDA Laboratory', 'Laboratory Practice II'],
+        'Sem 7': ['Information and Cyber Security', 'Machine Learning and Deep Learning', 'Design and Analysis of Algorithms', 'Elective III', 'Elective IV', 'Laboratory Practice III', 'Laboratory Practice IV', 'Project Phase I'],
+        'Sem 8': ['Distributed Systems', 'Software Design and Modeling', 'Elective V', 'Elective VI', 'Laboratory Practice V', 'Laboratory Practice VI', 'Project Phase II'],
     },
     Mechanical: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Engineering Graphics', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
-        'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Thermodynamics I', 'Environmental Science'],
-        'Sem 3': ['Fluid Mechanics', 'Strength of Materials', 'Thermodynamics II', 'Engineering Mathematics III', 'Manufacturing Processes'],
-        'Sem 4': ['Kinematics of Machinery', 'Heat Transfer', 'Machine Design I', 'Engineering Mathematics IV', 'Material Science'],
-        'Sem 5': ['Machine Design II', 'Industrial Engineering', 'CAD/CAM', 'Dynamics of Machinery', 'Elective I'],
-        'Sem 6': ['Automobile Engineering', 'Refrigeration & AC', 'FEA', 'Robotics', 'Elective II'],
-        'Sem 7': ['Power Plant Engineering', 'Project I', 'Elective III', 'Elective IV'],
-        'Sem 8': ['Project II', 'Elective V'],
+        'Sem 1': FESem1,
+        'Sem 2': FESem2,
+        'Sem 3': ['Solid Mechanics', 'Solid Modeling and Drafting', 'Engineering Thermodynamics', 'Engineering Materials and Metallurgy', 'Electrical and Electronics Engineering', 'Geometric Modeling Lab', 'Thermodynamics Lab'],
+        'Sem 4': ['Fluid Mechanics', 'Kinematics of Machinery', 'Applied Thermodynamics', 'Machining Science and Technology', 'Project Based Learning', 'Fluid Mechanics Lab', 'Kinematics Lab', 'Machine Shop'],
+        'Sem 5': ['Numerical & Statistical Methods', 'Heat & Mass Transfer', 'Design of Machine Elements', 'Mechatronics', 'Elective I', 'Heat Transfer Lab', 'Mechatronics Lab'],
+        'Sem 6': ['Artificial Intelligence & Machine Learning', 'Computer Aided Engineering', 'Design of Transmission Systems', 'Composite Materials', 'Elective II', 'CAE Lab', 'Internship'],
+        'Sem 7': ['Dynamics of Machinery', 'Turbomachinery', 'Elective III', 'Elective IV', 'Dynamics Lab', 'Turbomachinery Lab', 'Project Stage I'],
+        'Sem 8': ['Computer Integrated Manufacturing', 'Energy Engineering', 'Elective V', 'Elective VI', 'CIM Lab', 'Energy Lab', 'Project Stage II'],
     },
     Civil: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Engineering Graphics', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
-        'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Surveying I', 'Environmental Science'],
-        'Sem 3': ['Structural Analysis I', 'Fluid Mechanics', 'Building Construction', 'Engineering Mathematics III', 'Surveying II'],
-        'Sem 4': ['Structural Analysis II', 'Geotechnical Engineering', 'Hydraulics', 'Engineering Mathematics IV', 'Transportation Engineering'],
-        'Sem 5': ['RCC Design', 'Steel Structures', 'Environmental Engineering', 'Estimation & Costing', 'Elective I'],
-        'Sem 6': ['Foundation Engineering', 'Water Resources', 'Construction Management', 'Advanced Surveying', 'Elective II'],
-        'Sem 7': ['Earthquake Engineering', 'Project I', 'Elective III', 'Elective IV'],
-        'Sem 8': ['Project II', 'Elective V'],
+        'Sem 1': FESem1,
+        'Sem 2': FESem2,
+        'Sem 3': ['Building Technology and Architectural Planning', 'Mechanics of Structures', 'Fluid Mechanics', 'Engineering Mathematics III', 'Engineering Geology'],
+        'Sem 4': ['Geotechnical Engineering', 'Surveying', 'Concrete Technology', 'Structural Analysis', 'Project Based Learning'],
+        'Sem 5': ['Hydrology and Water Resources Engineering', 'Infrastructure Engineering and Construction Techniques', 'Structural Design I', 'Elective I', 'Elective II'],
+        'Sem 6': ['Advanced Surveying', 'Project Management and Engineering Economics', 'Foundation Engineering', 'Structural Design II', 'Elective III', 'Internship'],
+        'Sem 7': ['Environmental Engineering I', 'Transportation Engineering', 'Elective IV', 'Elective V', 'Project Phase I'],
+        'Sem 8': ['Dams and Hydraulic Structures', 'Quantity Surveying, Contracts and Tenders', 'Elective VI', 'Elective VII', 'Project Phase II'],
     },
     Electrical: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
-        'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Circuit Theory', 'Environmental Science'],
-        'Sem 3': ['Electrical Machines I', 'Network Analysis', 'Electronics', 'Engineering Mathematics III', 'Electromagnetic Theory'],
-        'Sem 4': ['Electrical Machines II', 'Power Systems I', 'Control Systems', 'Engineering Mathematics IV', 'Signals & Systems'],
-        'Sem 5': ['Power Systems II', 'Power Electronics', 'Instrumentation', 'Microprocessor', 'Elective I'],
-        'Sem 6': ['Switchgear & Protection', 'Electric Drives', 'Digital Signal Processing', 'Renewable Energy', 'Elective II'],
-        'Sem 7': ['HVDC', 'Project I', 'Elective III', 'Elective IV'],
-        'Sem 8': ['Project II', 'Elective V'],
+        'Sem 1': FESem1,
+        'Sem 2': FESem2,
+        'Sem 3': ['Power Generation Technologies', 'Material Science', 'Analog and Digital Electronics', 'Electrical Measurement and Instrumentation', 'Engineering Mathematics III'],
+        'Sem 4': ['Power System I', 'Electrical Machines I', 'Network Analysis', 'Numerical Methods and Computer Programming', 'Fundamental of Microcontroller and Applications'],
+        'Sem 5': ['Industrial and Technology Management', 'Power System II', 'Electrical Machines II', 'Power Electronics', 'Elective I'],
+        'Sem 6': ['Energy Audit and Management', 'Power System Operation and Control', 'Control System', 'Elective II', 'Internship'],
+        'Sem 7': ['PLC and SCADA', 'Power Quality', 'Elective III', 'Elective IV', 'Project Phase I'],
+        'Sem 8': ['Smart Grid', 'Electric and Hybrid Vehicles', 'Elective V', 'Elective VI', 'Project Phase II'],
     },
     Electronics: {
-        'Sem 1': ['Engineering Mathematics I', 'Physics', 'Chemistry', 'BEE', 'Indian Knowledge System (IKS)', 'FPL', 'PPS'],
-        'Sem 2': ['Engineering Mathematics II', 'Engineering Mechanics', 'Workshop', 'Circuit Theory', 'Environmental Science'],
-        'Sem 3': ['Analog Electronics', 'Digital Electronics', 'Network Analysis', 'Engineering Mathematics III', 'Signals & Systems'],
-        'Sem 4': ['Microprocessor', 'Communication Systems', 'Control Systems', 'Engineering Mathematics IV', 'Electromagnetic Theory'],
-        'Sem 5': ['VLSI Design', 'Microcontrollers', 'Digital Communication', 'Antenna Theory', 'Elective I'],
-        'Sem 6': ['Embedded Systems', 'Optical Communication', 'DSP', 'Wireless Communication', 'Elective II'],
-        'Sem 7': ['Satellite Communication', 'Project I', 'Elective III', 'Elective IV'],
-        'Sem 8': ['Project II', 'Elective V'],
+        'Sem 1': FESem1,
+        'Sem 2': FESem2,
+        'Sem 3': ['Engineering Mathematics III', 'Electronic Circuits', 'Digital Circuits', 'Electrical Circuits', 'Data Structures'],
+        'Sem 4': ['Signals and Systems', 'Control Systems', 'Principles of Communication Systems', 'Object Oriented Programming', 'Project Based Learning'],
+        'Sem 5': ['Digital Communication', 'Microcontrollers', 'Electromagnetic Field Theory', 'Database Management', 'Elective I'],
+        'Sem 6': ['Cellular Networks', 'Project Management', 'Power Devices and Circuits', 'Elective II', 'Internship'],
+        'Sem 7': ['VLSI Design and Technology', 'Computer Networks and Security', 'Elective III', 'Elective IV', 'Project Phase I'],
+        'Sem 8': ['Radiation and Microwave Theory', 'Automotive Electronics', 'Elective V', 'Elective VI', 'Project Phase II'],
     },
 };
 
@@ -92,6 +113,19 @@ export const SUBJECT_MAP = {
  */
 export function getSubjects(branch, semester) {
     return SUBJECT_MAP[branch]?.[semester] || [];
+}
+
+/**
+ * Get subjects for a whole year (both semesters combined)
+ */
+export function getSubjectsByYear(branch, year) {
+    const sems = SEMESTERS[year] || [];
+    const subs = new Set();
+    sems.forEach(sem => {
+        const semSubs = SUBJECT_MAP[branch]?.[sem] || [];
+        semSubs.forEach(s => subs.add(s));
+    });
+    return [...subs];
 }
 
 /**

@@ -10,8 +10,10 @@ import { awardDownloadPoints } from '@/lib/points';
 import { ScrollReveal } from '@/components/Animations';
 import styles from '../notes/page.module.css';
 import { IconAssignment, IconUser, IconFolder, IconHat, IconDownload, IconStar, IconHeart, IconSearch, IconLock, IconFlag } from '@/components/Icons';
+import SkeletonCard from '@/components/SkeletonCard/SkeletonCard';
+import { getAllSubjects } from '@/lib/subjectMap';
 
-const SUBJECTS = ['All', 'DBMS', 'DSA', 'OS', 'CN', 'SE', 'ML', 'Mathematics'];
+const SUBJECTS = ['All', ...getAllSubjects()];
 
 export default function AssignmentsPage() {
     const { user, loading: authLoading } = useAuth();
@@ -31,7 +33,11 @@ export default function AssignmentsPage() {
                 const snapshot = await Promise.race([fetchPromise, timeout]);
                 if (cancelled) return;
                 const data = snapshot.docs
-                    .map(d => ({ id: d.id, ...d.data() }))
+                    .map(d => {
+                        const fileData = d.data();
+                        if (fileData.subject === 'BE') fileData.subject = 'BEE';
+                        return { id: d.id, ...fileData };
+                    })
                     .filter(f => f.type === 'Assignment' && f.status === 'approved');
                 data.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
                 setAssignments(data);
@@ -124,8 +130,10 @@ export default function AssignmentsPage() {
                 </ScrollReveal>
 
                 {loading ? (
-                    <div className={`container ${styles.stateWrapper}`}>
-                        <div style={{ color: 'var(--text-muted)' }}>Synchronizing databases...</div>
+                    <div className={styles.gridContainer}>
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <SkeletonCard key={i} />
+                        ))}
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className={`container ${styles.stateWrapper} glass-panel`}>

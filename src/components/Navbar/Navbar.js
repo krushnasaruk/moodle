@@ -65,7 +65,7 @@ export default function Navbar() {
                 {/* Logo */}
                 <Link href="/" className={styles.logo}>
                     <span className={styles.logoIcon}>📚</span>
-                    StudyHub
+                    Sutras
                 </Link>
 
                 {/* Search */}

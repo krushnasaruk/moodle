@@ -55,7 +55,7 @@ export default function LoginPage() {
             <div className={styles.authContainer}>
                 <div className={styles.authHeader}>
                     <h1 className={styles.title}>Welcome Back</h1>
-                    <p className={styles.subtitle}>Sign in to your StudyHub account</p>
+                    <p className={styles.subtitle}>Sign in to your Sutras account</p>
                 </div>
 
                 {error && <div className={styles.errorAlert}>{error}</div>}

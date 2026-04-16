@@ -10,6 +10,7 @@ import { awardDownloadPoints } from '@/lib/points';
 import { ScrollReveal } from '@/components/Animations';
 import styles from './page.module.css';
 import { IconNotes, IconUser, IconFolder, IconHat, IconDownload, IconStar, IconHeart, IconSearch, IconLock, IconFlag } from '@/components/Icons';
+import SkeletonCard from '@/components/SkeletonCard/SkeletonCard';
 
 const BRANCHES = ['All', 'Computer', 'IT', 'Mechanical', 'Civil', 'Electrical', 'Electronics'];
 const YEARS = ['All', '1st Year', '2nd Year', '3rd Year', '4th Year'];
@@ -39,7 +40,11 @@ function NotesContent() {
                 if (cancelled) return;
 
                 const data = snapshot.docs
-                    .map(d => ({ id: d.id, ...d.data() }))
+                    .map(d => {
+                        const fileData = d.data();
+                        if (fileData.subject === 'BE') fileData.subject = 'BEE';
+                        return { id: d.id, ...fileData };
+                    })
                     .filter(f => f.type === 'Notes' && f.status === 'approved');
                 data.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
                 setNotes(data);
@@ -159,8 +164,10 @@ function NotesContent() {
                 </ScrollReveal>
 
                 {loading ? (
-                    <div className={`container ${styles.stateWrapper}`}>
-                        <div style={{ color: 'var(--text-muted)' }}>Synchronizing databases...</div>
+                    <div className={styles.gridContainer}>
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <SkeletonCard key={i} />
+                        ))}
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className={`container ${styles.stateWrapper} glass-panel`}>

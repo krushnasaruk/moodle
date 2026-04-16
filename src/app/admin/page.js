@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
@@ -22,6 +22,8 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState('pending');
     const [actionLoading, setActionLoading] = useState('');
+    const [usersList, setUsersList] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Modal State
     const [editingFile, setEditingFile] = useState(null);
@@ -31,11 +33,29 @@ export default function AdminPage() {
 
     useEffect(() => {
         if (isAdmin) {
-            fetchFiles();
+            if (tab === 'users') {
+                fetchUsers();
+            } else {
+                fetchFiles();
+            }
         } else {
             setLoading(false);
         }
     }, [isAdmin, tab]);
+
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            const snapshot = await getDocs(collection(db, 'users'));
+            const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            data.sort((a,b) => (a.email || '').localeCompare(b.email || ''));
+            setUsersList(data);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setUsersList([]);
+        }
+        setLoading(false);
+    };
 
     const fetchFiles = async () => {
         setLoading(true);
@@ -95,6 +115,18 @@ export default function AdminPage() {
         } catch (error) {
             console.error('Error dismissing report:', error);
             alert('Failed to clear report.');
+        }
+        setActionLoading('');
+    };
+
+    const toggleRole = async (userId, currentRole) => {
+        setActionLoading(userId);
+        try {
+            const newRole = currentRole === 'teacher' ? 'student' : 'teacher';
+            await updateDoc(doc(db, 'users', userId), { role: newRole });
+            setUsersList(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+        } catch (e) {
+            alert('Error toggling role: ' + e.message);
         }
         setActionLoading('');
     };
@@ -182,7 +214,7 @@ export default function AdminPage() {
             <div className={styles.pageInner}>
                 <div className={styles.pageHeader}>
                     <h1 className={styles.pageTitle}><IconShield size={40} /> Admin Panel</h1>
-                    <p className={styles.pageDesc}>Review uploads, moderate content, and fix community reports.</p>
+                    <p className={styles.pageDesc}>Review uploads, moderate content, and control user access profiles.</p>
                 </div>
 
                 <div className={styles.tabs}>
@@ -198,9 +230,55 @@ export default function AdminPage() {
                     <button className={`${styles.tab} ${tab === 'rejected' ? styles.tabActive : ''}`} onClick={() => setTab('rejected')}>
                         ❌ Rejected
                     </button>
+                    <button className={`${styles.tab} ${tab === 'users' ? styles.specialActive : ''}`} onClick={() => setTab('users')} style={{marginLeft: 'auto', background: tab === 'users' ? 'rgba(138, 43, 226, 0.1)' : 'transparent'}}>
+                        👥 Access Control
+                    </button>
                 </div>
 
-                {loading ? (
+                {tab === 'users' ? (
+                    <div style={{marginTop: '20px'}}>
+                        <div style={{marginBottom: '20px'}}>
+                            <input 
+                                type="text" 
+                                placeholder="Search by name or email..." 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className={styles.searchBar}
+                            />
+                        </div>
+                        {loading ? (
+                            <div className={styles.loadingState}>Fetching active accounts...</div>
+                        ) : usersList.length === 0 ? (
+                            <div className={styles.emptyState}>No users found.</div>
+                        ) : (
+                            <div className={styles.fileList}>
+                                {usersList
+                                    .filter(u => `${u.name||''} ${u.email||''}`.toLowerCase().includes(searchQuery.toLowerCase()))
+                                    .map(u => (
+                                    <div key={u.id} className={styles.fileCard} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <div className={styles.fileInfo}>
+                                            <div className={styles.fileTitle}>{u.name || 'No Name Set'}</div>
+                                            <div className={styles.fileMeta}>
+                                                <span className={styles.metaTag}><IconUser size={14} /> {u.email}</span>
+                                                <span className={styles.metaTag} style={{color: u.role === 'teacher' ? 'var(--neo)' : 'var(--text-secondary)'}}>Role: {u.role || 'student'}</span>
+                                            </div>
+                                        </div>
+                                        <div className={styles.fileActions}>
+                                            <button 
+                                                className={`${styles.actionBtn} ${u.role === 'teacher' ? styles.rejectBtn : styles.approveBtn}`}
+                                                onClick={() => toggleRole(u.id, u.role)}
+                                                disabled={actionLoading === u.id}
+                                                style={u.role === 'teacher' ? {background: 'rgba(239, 68, 68, 0.1)'} : {background: 'rgba(34, 197, 94, 0.1)'}}
+                                            >
+                                                {actionLoading === u.id ? '...' : u.role === 'teacher' ? '⬇️ Demote to Student' : '⬆️ Promote to Teacher'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ) : loading ? (
                     <div className={styles.loadingState}>Refreshing database...</div>
                 ) : files.length === 0 ? (
                     <div className={styles.emptyState}>
@@ -283,7 +361,7 @@ export default function AdminPage() {
                                 </div>
                             </div>
                         ))}
-                    </div>
+                     </div>
                 )}
             </div>
 

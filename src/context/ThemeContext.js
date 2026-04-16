@@ -8,7 +8,7 @@ export function ThemeProvider({ children }) {
     const [theme, setTheme] = useState('light'); // default to Light (notebook style)
 
     useEffect(() => {
-        const saved = localStorage.getItem('studyhub-theme');
+        const saved = localStorage.getItem('sutras-theme');
         if (saved === 'dark') {
             setTheme('dark');
             document.documentElement.classList.add('dark');
@@ -20,11 +20,11 @@ export function ThemeProvider({ children }) {
     const toggleTheme = () => {
         if (theme === 'light') {
             setTheme('dark');
-            localStorage.setItem('studyhub-theme', 'dark');
+            localStorage.setItem('sutras-theme', 'dark');
             document.documentElement.classList.add('dark');
         } else {
             setTheme('light');
-            localStorage.setItem('studyhub-theme', 'light');
+            localStorage.setItem('sutras-theme', 'light');
             document.documentElement.classList.remove('dark');
         }
     };

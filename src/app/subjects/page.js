@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
-import { BRANCHES, YEARS, SEMESTERS, getSubjects } from '@/lib/subjectMap';
+import { BRANCHES, YEARS, getSubjectsByYear } from '@/lib/subjectMap';
 import { ScrollReveal } from '@/components/Animations';
 import { IconNotes, IconPyq, IconAssignment, IconFolder, IconStar, IconDownload, IconLock } from '@/components/Icons';
 import styles from './page.module.css';
@@ -33,7 +33,6 @@ export default function SubjectsPage() {
 
     const [branch, setBranch] = useState('Computer');
     const [year, setYear] = useState('1st Year');
-    const [semester, setSemester] = useState('Sem 1');
     const [subjectContent, setSubjectContent] = useState({});
     const [loading, setLoading] = useState(true);
     const [hasLoadedPrefs, setHasLoadedPrefs] = useState(false);
@@ -43,14 +42,12 @@ export default function SubjectsPage() {
             if (user) {
                 setBranch(user.branch || 'Computer');
                 setYear(user.year || '1st Year');
-                setSemester(user.semester || 'Sem 1');
             }
             setHasLoadedPrefs(true);
         }
     }, [user, authLoading, hasLoadedPrefs]);
 
-    const availableSemesters = year && year !== 'All' ? (SEMESTERS[year] || []) : [];
-    const subjects = getSubjects(branch, semester);
+    const subjects = getSubjectsByYear(branch, year);
 
     useEffect(() => {
         let cancelled = false;
@@ -65,11 +62,32 @@ export default function SubjectsPage() {
                 const allFiles = snapshot.docs
                     .map(d => ({ id: d.id, ...d.data() }))
                     .filter(f => f.status === 'approved');
+                const availableSubjsForRoute = getSubjectsByYear(branch, year) || [];
                 const grouped = {};
+                availableSubjsForRoute.forEach(s => grouped[s] = []);
+
                 allFiles.forEach(file => {
-                    const subj = file.subject || 'Other';
-                    if (!grouped[subj]) grouped[subj] = [];
-                    grouped[subj].push(file);
+                    let rawSubj = (file.subject || 'Other').trim();
+                    let matchedBucket = rawSubj;
+
+                    // Hardcoded Alias Routing for legacy uploads
+                    if (rawSubj.toUpperCase() === 'BE') {
+                        rawSubj = 'BEE';
+                    }
+
+                    // Intelligent fuzzy/case-insensitive routing
+                    const lowerRaw = rawSubj.toLowerCase();
+                    const found = availableSubjsForRoute.find(vs => {
+                        const vsLower = vs.toLowerCase();
+                        return vsLower === lowerRaw || vsLower.includes(lowerRaw) || lowerRaw.includes(vsLower);
+                    });
+
+                    if (found) {
+                        matchedBucket = found;
+                    }
+
+                    if (!grouped[matchedBucket]) grouped[matchedBucket] = [];
+                    grouped[matchedBucket].push(file);
                 });
                 setSubjectContent(grouped);
             } catch (error) {
@@ -111,15 +129,11 @@ export default function SubjectsPage() {
 
                 <ScrollReveal delay={100}>
                     <div className={styles.filterBar}>
-                        <select className={styles.filterSelect} value={branch} onChange={(e) => { setBranch(e.target.value); setSemester(''); }}>
+                        <select className={styles.filterSelect} value={branch} onChange={(e) => setBranch(e.target.value)}>
                             {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
                         </select>
-                        <select className={styles.filterSelect} value={year} onChange={(e) => { setYear(e.target.value); setSemester(''); }}>
+                        <select className={styles.filterSelect} value={year} onChange={(e) => setYear(e.target.value)}>
                             {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-                        </select>
-                        <select className={styles.filterSelect} value={semester} onChange={(e) => setSemester(e.target.value)} disabled={!year}>
-                            <option value="">Select Semester</option>
-                            {availableSemesters.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                     </div>
                 </ScrollReveal>
