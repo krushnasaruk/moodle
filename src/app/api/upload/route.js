@@ -33,8 +33,8 @@ export async function POST(request) {
         // Write the file
         await writeFile(filePath, buffer);
 
-        // Return the relative URL which can be accessed instantly
-        const fileUrl = `/uploads/${filename}`;
+        // Return the relative URL which can be accessed instantly via our dynamic route
+        const fileUrl = `/api/downloads/${filename}`;
         
         return NextResponse.json({ success: true, url: fileUrl });
     } catch (error) {

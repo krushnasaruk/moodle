@@ -4,10 +4,12 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const pathname = usePathname();
     const router = useRouter();
     const [menuOpen, setMenuOpen] = useState(false);
@@ -95,6 +97,14 @@ export default function Navbar() {
 
                 {/* Actions */}
                 <div className={styles.navActions}>
+
+                    <button 
+                        onClick={toggleTheme} 
+                        title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem', padding: '0 8px', color: 'inherit' }}
+                    >
+                        {theme === 'light' ? '🌙' : '☀️'}
+                    </button>
 
                     <Link href="/upload" className={styles.uploadBtn}>
                         📤 <span>Upload</span>

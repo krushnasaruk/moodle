@@ -74,8 +74,8 @@
 }
 
 .subjectCard {
-    background: rgba(20, 20, 28, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     padding: var(--space-xl);
     backdrop-filter: blur(20px);
@@ -83,10 +83,7 @@
     animation: fadeInUp 0.4s ease-out both;
     display: flex;
     flex-direction: column;
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.2),
-        0 16px 32px rgba(0, 0, 0, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    box-shadow: var(--shadow-glass);
     position: relative;
     overflow: hidden;
 }
@@ -102,14 +99,10 @@
 }
 
 .subjectCard:hover {
-    border-color: rgba(138, 43, 226, 0.35);
+    border-color: var(--primary);
     transform: translateY(-8px) scale(1.01);
-    box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.3),
-        0 24px 48px rgba(0, 0, 0, 0.3),
-        0 0 30px rgba(138, 43, 226, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    background: rgba(30, 28, 45, 0.6);
+    box-shadow: var(--glass-hover-shadow);
+    background: var(--bg-card);
 }
 
 .subjectCard:hover::before {
@@ -158,16 +151,16 @@
     align-items: center;
     gap: 10px;
     padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--bg-input);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-size: 0.813rem;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .contentItem:hover {
-    background: rgba(138, 43, 226, 0.08);
-    border-color: rgba(138, 43, 226, 0.2);
+    background: var(--primary-glow);
+    border-color: var(--primary);
     transform: translateX(4px);
 }
 
@@ -245,8 +238,8 @@
     justify-content: center;
     gap: 6px;
     padding: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    color: var(--primary-light);
+    border-top: 1px solid var(--border);
+    color: var(--primary);
     font-size: 0.813rem;
     font-weight: 700;
     letter-spacing: 0.03em;
@@ -258,8 +251,8 @@
 }
 
 .viewAllLink:hover {
-    color: #fff;
-    background: rgba(138, 43, 226, 0.1);
+    color: var(--text-primary);
+    background: var(--bg-surface);
     border-radius: 0 0 var(--radius-xl) var(--radius-xl);
     margin: auto -28px -28px;
     padding: 12px 28px;

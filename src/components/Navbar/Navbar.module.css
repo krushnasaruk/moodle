@@ -7,21 +7,33 @@
     width: 90%;
     max-width: var(--max-width);
     height: 64px;
-    background: rgba(15, 15, 20, 0.6);
+    background: var(--bg-surface);
     backdrop-filter: blur(24px) saturate(150%);
     -webkit-backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border);
     border-radius: var(--radius-full);
     z-index: 1000;
     display: flex;
     align-items: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translate(-50%, -150%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
 }
 
 .navbarScrolled {
-    background: rgba(10, 10, 11, 0.9);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(138, 43, 226, 0.15);
+    background: var(--bg-card);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), 0 0 20px var(--primary-glow);
 }
 
 .navInner {
@@ -46,6 +58,10 @@
     letter-spacing: -0.03em;
 }
 
+.logo:hover .logoIcon {
+    transform: rotate(10deg) scale(1.05);
+}
+
 .logoIcon {
     width: 32px;
     height: 32px;
@@ -56,6 +72,7 @@
     justify-content: center;
     color: white;
     font-size: 1rem;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .searchWrapper {
@@ -117,29 +134,39 @@
     position: relative;
 }
 
-.navLink:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.navLinkActive {
-    color: var(--primary-light);
-    background: rgba(138, 43, 226, 0.15);
-    font-weight: 700;
-    box-shadow: 0 0 12px rgba(138, 43, 226, 0.2);
-}
-
-.navLinkActive::after {
+.navLink::after {
     content: '';
     position: absolute;
     bottom: 2px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) scaleX(0);
+    transform-origin: center;
     width: 20px;
     height: 2px;
-    background: var(--primary-light);
+    background: var(--primary);
     border-radius: var(--radius-full);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.navLink:hover {
+    color: var(--text-primary);
+    background: var(--bg-surface);
+}
+
+.navLink:hover::after {
+    transform: translateX(-50%) scaleX(1);
+}
+
+.navLinkActive {
+    color: var(--primary);
+    background: var(--primary-glow);
+    font-weight: 700;
+    box-shadow: 0 0 12px var(--primary-glow);
+}
+
+.navLinkActive::after {
+    transform: translateX(-50%) scaleX(1);
 }
 
 .navActions {
@@ -162,6 +189,25 @@
     font-weight: 600;
     transition: all var(--transition-normal);
     text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.uploadBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shine 4s infinite linear;
+}
+
+@keyframes shine {
+    0% { left: -100%; }
+    20% { left: 100%; }
+    100% { left: 100%; }
 }
 
 .uploadBtn:hover {
@@ -169,6 +215,7 @@
     color: #fff;
     border-color: var(--primary);
     box-shadow: 0 0 15px var(--primary-glow);
+    transform: translateY(-1px);
 }
 
 .loginBtn {
@@ -223,11 +270,11 @@
     position: absolute;
     top: calc(100% + 12px);
     right: 0;
-    background: rgba(20, 20, 25, 0.95);
+    background: var(--bg-surface);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: var(--shadow-glass);
     min-width: 220px;
     padding: var(--space-sm);
     animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -235,7 +282,7 @@
 }
 
 .profileMenuScrolled {
-    background: rgba(10, 10, 15, 0.98);
+    background: var(--bg-card);
 }
 
 .profileMenuItem {
