@@ -1,0 +1,159 @@
+.pageWrapper {
+    min-height: 100vh;
+    padding-top: calc(var(--navbar-height) + var(--space-xl));
+    padding-bottom: var(--space-3xl);
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+}
+
+.profileCard {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    box-shadow: var(--shadow-glass);
+    margin-bottom: var(--space-2xl);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+}
+
+.avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary-glow);
+    background: var(--bg-input);
+    flex-shrink: 0;
+}
+
+.avatarFallback {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.userInfo {
+    flex: 1;
+}
+
+.userName {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.userRole {
+    display: inline-block;
+    padding: 4px 12px;
+    background: var(--primary-glow);
+    color: var(--primary);
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-md);
+}
+
+.roleTeacher {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--error);
+}
+
+.roleAdmin {
+    background: var(--secondary-glow);
+    color: var(--secondary);
+}
+
+.userBio {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    line-height: 1.5;
+    margin-bottom: var(--space-md);
+}
+
+.metaInfo {
+    display: flex;
+    gap: var(--space-lg);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.statsSection {
+    margin-bottom: var(--space-xl);
+}
+
+.sectionTitle {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Feed List */
+.feed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+/* Reused Post Card Styles slightly simplified */
+.postCard {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-glass);
+    transition: all 0.3s ease;
+}
+
+.postCard:hover {
+    border-color: var(--primary);
+    box-shadow: var(--glass-hover-shadow);
+}
+
+.postTime {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: var(--space-sm);
+}
+
+.postContent {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+@media (max-width: 600px) {
+    .profileCard {
+        flex-direction: column;
+        text-align: center;
+    }
+    .metaInfo {
+        justify-content: center;
+    }
+}

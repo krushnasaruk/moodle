@@ -1,0 +1,357 @@
+.pageWrapper {
+    min-height: 100vh;
+    padding-top: calc(var(--navbar-height) + var(--space-xl));
+    padding-bottom: var(--space-3xl);
+    background: var(--bg-primary);
+}
+
+.container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+/* ─── BACK BUTTON ─────────────────────────────────────────────────────── */
+.backBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: var(--space-xl);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    padding: 8px 18px;
+    border-radius: var(--radius-full);
+    transition: all 0.25s ease;
+}
+.backBtn:hover { color: var(--primary); border-color: var(--primary); transform: translateX(-3px); }
+
+/* ─── PROGRESS BAR ────────────────────────────────────────────────────── */
+.progressBar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: var(--space-2xl);
+}
+.progressStep {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.stepCircle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-input);
+    border: 2px solid var(--border);
+    color: var(--text-muted);
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+}
+.stepActive {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 15px var(--primary-glow);
+}
+.stepLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+.progressLine {
+    height: 2px;
+    width: 80px;
+    background: var(--border);
+    margin: 0 8px;
+    margin-bottom: 20px;
+    border-radius: 1px;
+    transition: background 0.4s ease;
+}
+.progressLineFilled { background: var(--primary); }
+
+/* ─── FORM CARD ───────────────────────────────────────────────────────── */
+.formCard {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    box-shadow: var(--shadow-glass);
+    backdrop-filter: blur(20px);
+}
+
+.formHeaderRow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--border);
+}
+.emojiPreview {
+    font-size: 3.5rem;
+    line-height: 1;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+    flex-shrink: 0;
+}
+.formHeader {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+}
+.formSubtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* ─── FORM ELEMENTS ───────────────────────────────────────────────────── */
+.formGroup {
+    margin-bottom: var(--space-xl);
+}
+.formRow {
+    display: flex;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+}
+.formRow .formGroup { min-width: 200px; }
+
+.label {
+    display: block;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-size: 0.92rem;
+}
+.required { color: var(--error); margin-left: 2px; }
+.hint {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 400;
+    margin-top: 3px;
+}
+
+.input, .select, .textarea {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 11px 14px;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    transition: all 0.25s ease;
+    box-sizing: border-box;
+}
+.textarea { resize: vertical; min-height: 120px; }
+.input:focus, .select:focus, .textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+    background: var(--bg-surface);
+}
+.input::placeholder, .textarea::placeholder { color: var(--text-muted); }
+
+.charCount {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+/* ─── EMOJI GRID ──────────────────────────────────────────────────────── */
+.emojiGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.emojiOption {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: var(--bg-input);
+    border: 2px solid var(--border);
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.emojiOption:hover { border-color: var(--primary); transform: scale(1.1); background: var(--bg-surface); }
+.emojiSelected {
+    border-color: var(--primary) !important;
+    background: rgba(59, 130, 246, 0.1) !important;
+    box-shadow: 0 0 0 3px var(--primary-glow);
+    transform: scale(1.15) !important;
+}
+
+/* ─── TAGS ────────────────────────────────────────────────────────────── */
+.tagInputRow {
+    display: flex;
+    gap: 10px;
+}
+.tagInputRow .input { flex: 1; }
+.addTagBtn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 11px 20px;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.addTagBtn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+.addTagBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.tagsList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+.tagChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: var(--primary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    animation: tagPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes tagPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.tagRemove {
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.tagRemove:hover { opacity: 1; }
+
+/* ─── SECTION DIVIDER ─────────────────────────────────────────────────── */
+.sectionDivider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: var(--space-xl) 0 var(--space-lg);
+    color: var(--text-primary);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+.sectionDivider::before, .sectionDivider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+.sectionNote {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: -8px 0 var(--space-lg);
+    line-height: 1.5;
+}
+
+/* ─── STEP ACTIONS ────────────────────────────────────────────────────── */
+.stepActions {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+}
+.backStepBtn {
+    padding: 14px 24px;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+.backStepBtn:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ─── SUBMIT BUTTON ───────────────────────────────────────────────────── */
+.submitBtn {
+    width: 100%;
+    background: var(--gradient-brand);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: var(--radius-md);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px var(--primary-glow);
+    transition: all 0.25s ease;
+    margin-top: var(--space-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.submitBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--primary-glow);
+    filter: brightness(1.08);
+}
+.submitBtn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: var(--text-muted);
+    box-shadow: none;
+    transform: none;
+}
+
+.loadingRow { display: flex; align-items: center; gap: 10px; }
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── RESPONSIVE ──────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .formCard { padding: var(--space-xl); }
+    .formHeaderRow { flex-direction: column; align-items: flex-start; }
+    .formRow { flex-direction: column; }
+    .stepActions { flex-direction: column; }
+    .submitBtn { margin-top: 0; }
+}

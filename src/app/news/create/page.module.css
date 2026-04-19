@@ -1,0 +1,163 @@
+/* ─── PAGE WRAPPER ─────────────────────────────────────────────────── */
+.pageWrapper {
+    min-height: 100vh;
+    padding-top: calc(var(--navbar-height) + var(--space-2xl));
+    padding-bottom: calc(var(--space-3xl) + 40px);
+    position: relative;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+    position: relative;
+    z-index: 1;
+}
+
+/* ─── BACK BUTTON ──────────────────────────────────────────────────── */
+.backBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: var(--space-xl);
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.backBtn:hover {
+    color: var(--text-primary);
+    border-color: rgba(239, 68, 68, 0.3);
+    transform: translateX(-4px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+}
+
+/* ─── FORM CARD ────────────────────────────────────────────────────── */
+.formCard {
+    background: var(--bg-surface);
+    backdrop-filter: var(--blur-strong);
+    -webkit-backdrop-filter: var(--blur-strong);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2xl);
+    box-shadow: var(--shadow-glass);
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.formCard::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ef4444, #f97316, #eab308);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.formHeader {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: var(--space-sm);
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.formSubtitle {
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2xl);
+    font-size: 1.02rem;
+    line-height: 1.6;
+}
+
+/* ─── FORM FIELDS ──────────────────────────────────────────────────── */
+.formGroup {
+    margin-bottom: var(--space-xl);
+}
+
+.label {
+    display: block;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.input, .select, .textarea {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 18px;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 160px;
+    line-height: 1.6;
+}
+
+.input:focus, .select:focus, .textarea:focus {
+    outline: none;
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+/* ─── SUBMIT BUTTON ────────────────────────────────────────────────── */
+.submitBtn {
+    width: 100%;
+    background: linear-gradient(135deg, #ef4444, #f97316);
+    color: white;
+    border: none;
+    padding: 16px 28px;
+    border-radius: var(--radius-lg);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.submitBtn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: none;
+}
+
+.submitBtn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.015);
+    box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
+}
+.submitBtn:hover:not(:disabled)::after {
+    left: 200%;
+    transition: left 0.6s ease;
+}
+
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--text-muted);
+    box-shadow: none;
+}

@@ -130,6 +130,9 @@ export default function Navbar() {
                                         {user.name}
                                     </div>
                                     <div className={styles.profileMenuDivider} />
+                                    <Link href={`/profile/${user.uid}`} className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
+                                        👤 My Profile
+                                    </Link>
                                     <Link href="/dashboard" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
                                         📊 Dashboard
                                     </Link>
@@ -138,8 +141,17 @@ export default function Navbar() {
                                             🎓 Teacher Dashboard
                                         </Link>
                                     )}
+                                    <Link href="/community" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
+                                        💬 Community
+                                    </Link>
+                                    <Link href="/clubs" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
+                                        🏢 Clubs
+                                    </Link>
+                                    <Link href="/news" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
+                                        📰 College News
+                                    </Link>
                                     <Link href="/upload" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
-                                        📤 Upload
+                                        📤 Upload Resources
                                     </Link>
                                     <div className={styles.profileMenuDivider} />
                                     <button className={styles.profileMenuItem} onClick={logout} style={{ color: 'var(--danger)' }}>
