@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState } from 'react';
@@ -19,14 +22,14 @@ export default function CreateNewsPage() {
 
     if (loading) return null;
 
-    // Fast-fail auth guard for non-admins
-    if (!user || (user.role !== 'admin' && user.role !== 'teacher')) {
+    // Optional: Only allow logged-in users to post.
+    if (!user) {
         return (
             <div className={styles.pageWrapper}>
                 <div className={styles.container} style={{ textAlign: 'center', paddingTop: '100px' }}>
-                    <h1 style={{ color: 'var(--error)' }}>Access Denied</h1>
+                    <h1 style={{ color: 'var(--error)' }}>Sign In Required</h1>
                     <p style={{ color: 'var(--text-secondary)', marginTop: '16px' }}>
-                        Only faculty and administrators can publish official news.
+                        Please sign in to publish news.
                     </p>
                     <Link href="/news" className={styles.backBtn} style={{ marginTop: '24px' }}>
                         ← Return to News
@@ -36,6 +39,8 @@ export default function CreateNewsPage() {
         );
     }
 
+    const isAdminOrTeacher = user.role === 'admin' || user.role === 'teacher';
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!title.trim() || !content.trim()) return;
@@ -44,13 +49,17 @@ export default function CreateNewsPage() {
         try {
             await addDoc(collection(db, 'news'), {
                 authorId: user.uid,
-                authorName: user.name || 'Admin',
+                authorName: user.name || (isAdminOrTeacher ? 'Admin' : 'Student'),
                 title: title.trim(),
                 content: content.trim(),
                 type: type, // 'Urgent', 'Event', 'General'
+                status: isAdminOrTeacher ? 'approved' : 'pending',
                 timestamp: serverTimestamp()
             });
             
+            if (!isAdminOrTeacher) {
+                alert("Your news has been submitted and is pending verification from an admin.");
+            }
             router.push('/news');
         } catch (error) {
             console.error("Error creating news post:", error);

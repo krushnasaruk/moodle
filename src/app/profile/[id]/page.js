@@ -52,7 +52,8 @@ export default function ProfilePage({ params: paramsPromise }) {
                         id: doc.id,
                         ...doc.data()
                     }));
-                    fallbackData.sort((a,b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
+                    const getMillis = (ts) => ts?.toMillis ? ts.toMillis() : (new Date(ts).getTime() || 0);
+                    fallbackData.sort((a,b) => getMillis(b.timestamp) - getMillis(a.timestamp));
                     setUserPosts(fallbackData);
                 } catch(e) {
                      setError("Unable to load profile data.");
@@ -69,7 +70,12 @@ export default function ProfilePage({ params: paramsPromise }) {
 
     const formatDate = (timestamp) => {
         if (!timestamp) return '';
-        return timestamp.toDate().toLocaleDateString('en-US', {
+        if (typeof timestamp.toDate === 'function') {
+            return timestamp.toDate().toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+        }
+        return new Date(timestamp).toLocaleDateString('en-US', {
             year: 'numeric', month: 'short', day: 'numeric'
         });
     };

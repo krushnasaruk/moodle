@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState, useEffect, use } from 'react';
@@ -13,104 +16,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import styles from './page.module.css';
 
-// ─── RICH MOCK DATA ────────────────────────────────────────────────────────
-const MOCK_CLUBS = {
-    mock1: {
-        id: 'mock1', name: 'Computer Science Society', category: 'Tech', emoji: '💻',
-        gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
-        color: '#3b82f6',
-        description: 'A hub for all CS enthusiasts — from competitive coding to cutting-edge research. Whether you are debugging your first program or deploying production-grade systems, there is a place for you here.',
-        adminId: 'admin1', adminName: 'Dr. Ravi Kumar',
-        members: ['admin1', 'u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7'],
-        membersCount: 124,
-        tags: ['Coding', 'AI/ML', 'Web Dev', 'Open Source', 'Hackathons'],
-        meetSchedule: 'Every Friday, 5:00 PM — Room 204, CS Block',
-        discord: 'discord.gg/css-sutraverse',
-        joiningLink: 'https://forms.google.com/css-join',
-        whatsapp: 'chat.whatsapp.com/abc123',
-        upcomingEvent: 'CodeStorm 2026 — May 3rd',
-        supervisorName: 'Prof. Nair', supervisorEmail: 'nair@college.edu',
-        lastActive: 'Today', featured: true,
-    },
-    mock2: {
-        id: 'mock2', name: 'Photography Club', category: 'Arts & Media', emoji: '📸',
-        gradient: 'linear-gradient(135deg, #ec4899 0%, #f97316 100%)',
-        color: '#ec4899',
-        description: 'Capture moments, tell stories. We explore portrait, street, landscape, and astrophotography. Monthly photo walks, critique sessions, and college magazine contributions.',
-        adminId: 'admin2', adminName: 'Sneha Iyer',
-        members: ['admin2', 'u1', 'u2', 'u3'],
-        membersCount: 67,
-        tags: ['Portrait', 'Street Photography', 'Editing', 'Instagram'],
-        meetSchedule: 'Every Sunday, 7:00 AM — College Front Gate',
-        discord: 'discord.gg/photoclubsutras',
-        joiningLink: 'https://forms.google.com/photo-join',
-        whatsapp: 'chat.whatsapp.com/photo123',
-        upcomingEvent: 'Golden Hour Shoot — Apr 28th',
-        supervisorName: 'Prof. Mehra', supervisorEmail: 'mehra@college.edu',
-        lastActive: '2 hours ago', featured: true,
-    },
-    mock3: {
-        id: 'mock3', name: 'Robotics & IoT Club', category: 'Engineering', emoji: '🤖',
-        gradient: 'linear-gradient(135deg, #f59e0b 0%, #10b981 100%)',
-        color: '#f59e0b',
-        description: 'Build autonomous robots, smart home systems, and IoT devices. We compete in national robotics competitions and organise hands-on Arduino & Raspberry Pi workshops.',
-        adminId: 'admin3', adminName: 'Arjun Mehta',
-        members: ['admin3', 'u1', 'u2'],
-        membersCount: 89,
-        tags: ['Arduino', 'Raspberry Pi', 'Automation', 'IoT', 'Robotics'],
-        meetSchedule: 'Tuesday & Thursday, 4:30 PM — Electronics Lab',
-        discord: 'discord.gg/robotics-sutras',
-        joiningLink: 'https://forms.google.com/robotics-join',
-        whatsapp: 'chat.whatsapp.com/robot123',
-        upcomingEvent: 'RoboWar Championship — May 10th',
-        supervisorName: 'Prof. Singh', supervisorEmail: 'singh@college.edu',
-        lastActive: 'Yesterday', featured: false,
-    },
-    mock4: {
-        id: 'mock4', name: 'Drama & Theatre Club', category: 'Arts & Media', emoji: '🎭',
-        gradient: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-        color: '#8b5cf6',
-        description: 'Stage captivating performances, explore improvisation, scriptwriting, and direction. Annual inter-college theatre competition participants.',
-        adminId: 'admin4', adminName: 'Priya Desai',
-        members: ['admin4', 'u1'],
-        membersCount: 45,
-        tags: ['Theatre', 'Improv', 'Scriptwriting', 'Direction'],
-        meetSchedule: 'Monday & Wednesday, 6:00 PM — Auditorium',
-        discord: 'discord.gg/drama-sutras',
-        joiningLink: 'https://forms.google.com/drama-join',
-        whatsapp: 'chat.whatsapp.com/drama123',
-        upcomingEvent: 'Annual Play — May 20th',
-        supervisorName: 'Prof. Sharma', supervisorEmail: 'sharma@college.edu',
-        lastActive: '3 days ago', featured: false,
-    },
-};
 
-const MOCK_MEMBERS = {
-    mock1: [
-        { id: 'admin1', name: 'Dr. Ravi Kumar', role: 'Admin', branch: 'CSE', year: 'Faculty', emoji: '👨‍💻' },
-        { id: 'u1', name: 'Aditya Verma', role: 'Core Team', branch: 'CSE', year: '3rd Year', emoji: '🚀' },
-        { id: 'u2', name: 'Kavita Nair', role: 'Core Team', branch: 'ECE', year: '2nd Year', emoji: '💡' },
-        { id: 'u3', name: 'Rahul Sharma', role: 'Member', branch: 'ECE', year: '2nd Year', emoji: '🎯' },
-        { id: 'u4', name: 'Meera Patel', role: 'Member', branch: 'IT', year: '1st Year', emoji: '🌟' },
-        { id: 'u5', name: 'Suresh Babu', role: 'Member', branch: 'CSE', year: '4th Year', emoji: '🔥' },
-    ],
-    default: [
-        { id: 'admin', name: 'Club Admin', role: 'Admin', branch: 'CSE', year: 'Organiser', emoji: '👑' },
-        { id: 'u1', name: 'Student Member', role: 'Member', branch: 'ECE', year: '2nd Year', emoji: '🎓' },
-    ],
-};
-
-const MOCK_ANNOUNCEMENTS = {
-    mock1: [
-        { id: 'a1', authorName: 'Dr. Ravi Kumar', authorEmoji: '👨‍💻', content: '🚀 CodeStorm 2026 registrations are OPEN! This is our biggest hackathon yet — 36 hours, exciting problem statements, and prizes worth ₹1,50,000. Register via the joining link in our bio. Last date: April 30th!', pinned: true, createdAt: { toDate: () => new Date(Date.now() - 86400000) } },
-        { id: 'a2', authorName: 'Aditya Verma', authorEmoji: '🚀', content: 'Reminder: Weekly coding session this Friday at 5 PM in Room 204. We will be solving LeetCode Hard problems together. Bring your laptops!', pinned: false, createdAt: { toDate: () => new Date(Date.now() - 172800000) } },
-        { id: 'a3', authorName: 'Dr. Ravi Kumar', authorEmoji: '👨‍💻', content: '🎉 Congratulations to Team Nexus for winning 2nd place at the National Hackathon! Proud of you all. Full recap coming soon on our Discord.', pinned: false, createdAt: { toDate: () => new Date(Date.now() - 604800000) } },
-    ],
-    default: [
-        { id: 'a1', authorName: 'Club Admin', authorEmoji: '👑', content: '👋 Welcome to the club! We are so excited to have you here. Stay tuned for upcoming events and announcements.', pinned: true, createdAt: { toDate: () => new Date(Date.now() - 86400000) } },
-    ],
-};
-// ─── END MOCK DATA ─────────────────────────────────────────────────────────
 
 export default function ClubDetailPage({ params: paramsPromise }) {
     const params = use(paramsPromise);
@@ -139,7 +45,6 @@ export default function ClubDetailPage({ params: paramsPromise }) {
     const [saving, setSaving] = useState(false);
 
     const clubId = params.clubId;
-    const isMock = clubId?.startsWith('mock');
 
     // ── FETCH CLUB ───────────────────────────────────────────────────────────
     useEffect(() => {
@@ -148,44 +53,37 @@ export default function ClubDetailPage({ params: paramsPromise }) {
         const fetchClub = async () => {
             setLoading(true);
             try {
-                if (isMock) {
-                    const mockClub = MOCK_CLUBS[clubId] || MOCK_CLUBS.mock1;
-                    setClub(mockClub);
-                    setAnnouncements(MOCK_ANNOUNCEMENTS[clubId] || MOCK_ANNOUNCEMENTS.default);
-                    setMembers(MOCK_MEMBERS[clubId] || MOCK_MEMBERS.default);
-                    populateSettings(mockClub);
-                } else {
-                    // Real Firestore fetch
-                    const clubSnap = await getDoc(doc(db, 'clubs', clubId));
-                    if (!clubSnap.exists()) {
-                        setNotFound(true);
-                        setLoading(false);
-                        return;
-                    }
-                    const clubData = { id: clubSnap.id, ...clubSnap.data() };
-                    setClub(clubData);
-                    populateSettings(clubData);
-
-                    // Check if current user is already a member
-                    if (user) {
-                        setJoined(clubData.members?.includes(user.uid) || false);
-                    }
-
-                    // Fetch members from users collection
-                    fetchRealMembers(clubData.members || []);
-
-                    // Real-time announcements listener
-                    const q = query(
-                        collection(db, 'clubAnnouncements'),
-                        where('clubId', '==', clubId),
-                        orderBy('createdAt', 'desc')
-                    );
-                    const unsub = onSnapshot(q, snap => {
-                        setAnnouncements(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-                    });
+                // Real Firestore fetch
+                const clubSnap = await getDoc(doc(db, 'clubs', clubId));
+                if (!clubSnap.exists()) {
+                    setNotFound(true);
                     setLoading(false);
-                    return () => unsub();
+                    return;
                 }
+                const clubData = { id: clubSnap.id, ...clubSnap.data() };
+                setClub(clubData);
+                populateSettings(clubData);
+
+                // Check if current user is already a member
+                if (user) {
+                    setJoined(clubData.members?.includes(user.uid) || false);
+                }
+
+                // Fetch members from users collection
+                fetchRealMembers(clubData.members || []);
+
+                // Real-time announcements listener
+                const q = query(
+                    collection(db, 'clubAnnouncements'),
+                    where('clubId', '==', clubId)
+                );
+                const unsub = onSnapshot(q, snap => {
+                    const anns = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    anns.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+                    setAnnouncements(anns);
+                });
+                setLoading(false);
+                return () => unsub();
             } catch (err) {
                 console.error('Error fetching club:', err);
                 setNotFound(true);
@@ -222,11 +120,7 @@ export default function ClubDetailPage({ params: paramsPromise }) {
 
     // ── JOIN / LEAVE ─────────────────────────────────────────────────────────
     const handleJoin = async () => {
-        if (!user || isMock) {
-            if (isMock) {
-                setJoined(true);
-                return;
-            }
+        if (!user) {
             router.push('/login');
             return;
         }
@@ -293,26 +187,14 @@ export default function ClubDetailPage({ params: paramsPromise }) {
         if (!newAnnouncement.trim() || !user) return;
         setPosting(true);
         try {
-            if (!isMock) {
-                await addDoc(collection(db, 'clubAnnouncements'), {
-                    clubId,
-                    authorId: user.uid,
-                    authorName: user.name || user.email?.split('@')[0],
-                    content: newAnnouncement.trim(),
-                    pinned: false,
-                    createdAt: serverTimestamp(),
-                });
-            } else {
-                // Mock optimistic update
-                setAnnouncements(prev => [{
-                    id: 'new_' + Date.now(),
-                    authorName: user.name || 'You',
-                    authorEmoji: '✍️',
-                    content: newAnnouncement.trim(),
-                    pinned: false,
-                    createdAt: { toDate: () => new Date() },
-                }, ...prev]);
-            }
+            await addDoc(collection(db, 'clubAnnouncements'), {
+                clubId,
+                authorId: user.uid,
+                authorName: user.name || user.email?.split('@')[0],
+                content: newAnnouncement.trim(),
+                pinned: false,
+                createdAt: serverTimestamp(),
+            });
             setNewAnnouncement('');
         } catch (err) {
             console.error('Error posting:', err);
@@ -322,7 +204,7 @@ export default function ClubDetailPage({ params: paramsPromise }) {
 
     // ── SAVE SETTINGS ────────────────────────────────────────────────────────
     const handleSave = async () => {
-        if (!user || isMock) return;
+        if (!user) return;
         setSaving(true);
         try {
             await updateDoc(doc(db, 'clubs', clubId), {
@@ -369,7 +251,7 @@ export default function ClubDetailPage({ params: paramsPromise }) {
             if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
             if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
             return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        } catch { return ''; }
+        } catch (_err) { return ''; }
     };
 
     const isAdmin = user && club && (club.adminId === user.uid || user.role === 'admin' || user.role === 'teacher');
@@ -602,10 +484,34 @@ export default function ClubDetailPage({ params: paramsPromise }) {
                             <span className={styles.membersSubtitle}>({club.membersCount || members.length} total)</span>
                         </div>
                         <div className={styles.memberGrid}>
-                            {members.map((m, i) => {
+                            {members.slice().sort((a, b) => {
+                                // Calculate sort weights
+                                const getWeight = (member) => {
+                                    if (!isMock) {
+                                        if (member.id === club.adminId) return 3;
+                                        if (club.memberRoles?.[member.id]) return 2;
+                                        return 1;
+                                    }
+                                    if (member.role === 'Admin') return 3;
+                                    if (member.role === 'Core Team') return 2;
+                                    return 1;
+                                };
+                                return getWeight(b) - getWeight(a);
+                            }).map((m, i) => {
                                 const colors = ['#3b82f6','#8b5cf6','#ec4899','#10b981','#f59e0b','#06b6d4'];
                                 const bg = colors[i % colors.length];
-                                const role = m.role || 'Member';
+                                
+                                let role = 'Member';
+                                if (!isMock) {
+                                    if (m.id === club.adminId) role = 'Admin';
+                                    else if (club.memberRoles?.[m.id]) role = club.memberRoles[m.id];
+                                } else {
+                                    role = m.role || 'Member';
+                                }
+                                
+                                const isAdminRole = role === 'Admin';
+                                const isSpecialRole = role !== 'Member' && role !== 'Admin';
+                                
                                 return (
                                     <div key={m.id} className={styles.memberCard} style={{ animationDelay: `${i * 50}ms` }}>
                                         <div className={styles.memberAvatarWrap}>
@@ -619,8 +525,8 @@ export default function ClubDetailPage({ params: paramsPromise }) {
                                         <div className={styles.memberInfo}>
                                             <div className={styles.memberName}>{m.name || 'Member'}</div>
                                             {m.branch && <div className={styles.memberBranch}>{m.branch} {m.year ? `· ${m.year}` : ''}</div>}
-                                            <span className={`${styles.memberRoleBadge} ${role === 'Admin' ? styles.adminBadge : role === 'Core Team' ? styles.coreBadge : ''}`}>
-                                                {role === 'Admin' ? '⭐ Admin' : role === 'Core Team' ? '🔶 Core Team' : '• Member'}
+                                            <span className={`${styles.memberRoleBadge} ${isAdminRole ? styles.adminBadge : isSpecialRole ? styles.coreBadge : ''}`}>
+                                                {isAdminRole ? '⭐ Admin' : isSpecialRole ? `🔶 ${role}` : '• Member'}
                                             </span>
                                         </div>
                                         <span className={styles.memberArrow}>›</span>
@@ -725,11 +631,7 @@ export default function ClubDetailPage({ params: paramsPromise }) {
                 {/* ── SETTINGS TAB ── */}
                 {activeTab === 'settings' && isAdmin && (
                     <div className={styles.tabContent}>
-                        {isMock && (
-                            <div className={styles.mockNotice}>
-                                ⚠️ Settings are read-only in demo mode. Create a real club to edit!
-                            </div>
-                        )}
+
                         <div className={styles.settingsSection}>
                             <div className={styles.settingsTitle}>✏️ Club Details</div>
                             <div className={styles.formGroup}>
@@ -764,7 +666,7 @@ export default function ClubDetailPage({ params: paramsPromise }) {
                                 <label className={styles.label}>📱 WhatsApp Group</label>
                                 <input className={styles.input} value={editWhatsapp} onChange={e => setEditWhatsapp(e.target.value)} placeholder="chat.whatsapp.com/..." />
                             </div>
-                            <button className={styles.saveBtn} onClick={handleSave} disabled={saving || isMock}>
+                            <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
                                 {saving ? 'Saving...' : '💾 Save Changes'}
                             </button>
                         </div>
@@ -774,7 +676,7 @@ export default function ClubDetailPage({ params: paramsPromise }) {
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 16 }}>
                                 Permanently delete this club and all its data. This action cannot be undone.
                             </p>
-                            <button className={styles.deleteBtn} onClick={handleDelete} disabled={isMock}>
+                            <button className={styles.deleteBtn} onClick={handleDelete}>
                                 🗑️ Delete Club
                             </button>
                         </div>

@@ -22,16 +22,7 @@ export default function CommunityPage() {
                 ...doc.data()
             }));
             
-            if (postsData.length === 0) {
-                setPosts([
-                    { id: 'mock1', authorName: 'Dr. Smith', authorId: 'teacher', content: 'Welcome to the new Sutras Community! This is a great place to ask questions or share study resources. Enjoy!', timestamp: { toDate: () => new Date() }, likes: [], commentsCount: 0 },
-                    { id: 'mock2', authorName: 'Alice Johnson', authorId: 'student1', content: 'Does anyone have the notes from yesterday\'s Data Structures lecture? I missed it because I was sick.', timestamp: { toDate: () => new Date(Date.now() - 3600000) }, likes: ['user1', 'user2'], commentsCount: 3 },
-                    { id: 'mock3', authorName: 'Rahul Dev', authorId: 'student2', content: '🚀 Just submitted my final year project — an AI-powered campus chatbot! Would love feedback from fellow CSE students. DM me if you want to check it out.', timestamp: { toDate: () => new Date(Date.now() - 7200000) }, likes: ['user1', 'user2', 'user3', 'user4'], commentsCount: 7 },
-                    { id: 'mock4', authorName: 'Priya Mehta', authorId: 'student3', content: 'The new library reading room is amazing! 📚 So quiet and cozy. Highly recommend visiting during off-peak hours for the best experience.', timestamp: { toDate: () => new Date(Date.now() - 18000000) }, likes: ['user1'], commentsCount: 1 },
-                ]);
-            } else {
-                setPosts(postsData);
-            }
+            setPosts(postsData);
         }, (error) => {
             console.error("Error fetching posts:", error);
         });

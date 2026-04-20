@@ -147,6 +147,9 @@ export default function Navbar() {
                                     <Link href="/clubs" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
                                         🏢 Clubs
                                     </Link>
+                                    <Link href="/clubs/manage" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
+                                        ⚙️ Club Management
+                                    </Link>
                                     <Link href="/news" className={styles.profileMenuItem} onClick={() => setMenuOpen(false)}>
                                         📰 College News
                                     </Link>

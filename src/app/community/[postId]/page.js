@@ -25,9 +25,6 @@ export default function PostPage({ params: paramsPromise }) {
                 const postSnap = await getDoc(doc(db, 'posts', params.postId));
                 if (postSnap.exists()) {
                     setPost({ id: postSnap.id, ...postSnap.data() });
-                } else if (params.postId.startsWith('mock')) {
-                    // Fallback to mock data for demo clicking
-                    setPost({ id: params.postId, authorName: 'Dr. Smith', authorId: 'teacher', content: 'This is a mock post loaded dynamically via the URL parameter.', timestamp: { toDate: () => new Date() }, likes: [], commentsCount: 0 });
                 }
             } catch (err) {
                 console.error("Error fetching post:", err);
@@ -44,14 +41,7 @@ export default function PostPage({ params: paramsPromise }) {
         );
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            // Add a mock comment if viewing a mock post and DB is empty
-            if (data.length === 0 && params.postId.startsWith('mock')) {
-                setComments([
-                    { id: 'c1', authorName: 'Student Developer', content: 'This looks amazing! Thanks for sharing this mock resource with us.', timestamp: { toDate: () => new Date() } }
-                ]);
-            } else {
-                setComments(data);
-            }
+            setComments(data);
         });
 
         return () => unsubscribe();
@@ -71,12 +61,9 @@ export default function PostPage({ params: paramsPromise }) {
                 timestamp: serverTimestamp()
             });
 
-            // Increment post commentsCount if it's a real document
-            if (!post.id.startsWith('mock')) {
-                await updateDoc(doc(db, 'posts', post.id), {
-                    commentsCount: increment(1)
-                });
-            }
+            await updateDoc(doc(db, 'posts', post.id), {
+                commentsCount: increment(1)
+            });
 
             setNewComment('');
         } catch (error) {
@@ -88,7 +75,7 @@ export default function PostPage({ params: paramsPromise }) {
     };
 
     const handleLike = async () => {
-        if (!user || !post || post.id.startsWith('mock')) return;
+        if (!user || !post) return;
         
         const postRef = doc(db, 'posts', post.id);
         const hasLiked = post.likes?.includes(user.uid);

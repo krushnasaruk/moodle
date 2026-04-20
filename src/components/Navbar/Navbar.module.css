@@ -271,14 +271,27 @@
     top: calc(100% + 12px);
     right: 0;
     background: var(--bg-surface);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-glass);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
     min-width: 220px;
     padding: var(--space-sm);
     animation: fadeInUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     transform-origin: top right;
+    z-index: 1050;
+}
+
+.profileMenu::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--bg-main);
+    opacity: 0.92;
+    z-index: -1;
+    pointer-events: none;
 }
 
 .profileMenuScrolled {

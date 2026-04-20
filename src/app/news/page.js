@@ -1,9 +1,12 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { ScrollReveal } from '@/components/Animations';
 import styles from './page.module.css';
@@ -21,7 +24,7 @@ export default function NewsPage() {
     const [newsItems, setNewsItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState('All');
-
+    const [viewPending, setViewPending] = useState(false);
     useEffect(() => {
         const q = query(collection(db, 'news'), orderBy('timestamp', 'desc'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -29,17 +32,7 @@ export default function NewsPage() {
                 id: doc.id,
                 ...doc.data()
             }));
-            if (data.length === 0) {
-                setNewsItems([
-                    { id: 'mock1', title: 'Midterm Schedules Released', content: 'The preliminary schedules for all midterms have now been published. Please check your dashboard for individual timings and venue allocations. Contact your department coordinator for any conflicts.', type: 'Urgent', authorName: 'Academic Office', timestamp: { toDate: () => new Date() } },
-                    { id: 'mock2', title: 'Annual Tech Symposium 2026', content: 'Join us next Friday at the main auditorium for our biggest tech event of the year featuring guest speakers from Google and Microsoft. Registration is open now — limited seats available!', type: 'Event', authorName: 'Tech Committee', timestamp: { toDate: () => new Date(Date.now() - 86400000) } },
-                    { id: 'mock3', title: 'Library Renovation Update', content: 'The second floor of the campus library will be closed starting Monday for the new studying commons renovation. Alternative study spaces are available in the Student Center.', type: 'General', authorName: 'Facilities Dept.', timestamp: { toDate: () => new Date(Date.now() - 86400000 * 2) } },
-                    { id: 'mock4', title: 'Spring Career Fair — May 15th', content: 'Over 50 companies will be on campus for the Spring Career Fair. Bring your updated resume and dress professionally. Pre-registration opens April 25th on the career portal.', type: 'Event', authorName: 'Placement Cell', timestamp: { toDate: () => new Date(Date.now() - 86400000 * 3) } },
-                    { id: 'mock5', title: 'New Wi-Fi Hotspots on Campus', content: 'IT Services has installed 12 new high-speed Wi-Fi access points across hostels and common areas. Connect using your student credentials — speeds up to 200 Mbps.', type: 'General', authorName: 'IT Services', timestamp: { toDate: () => new Date(Date.now() - 86400000 * 5) } },
-                ]);
-            } else {
-                setNewsItems(data);
-            }
+            setNewsItems(data);
             setLoading(false);
         }, (error) => {
             console.error("Error fetching news:", error);
@@ -50,15 +43,29 @@ export default function NewsPage() {
     }, []);
 
     const filteredNews = useMemo(() => {
-        if (activeFilter === 'All') return newsItems;
-        return newsItems.filter(item => item.type === activeFilter);
-    }, [newsItems, activeFilter]);
+        let filtered = newsItems;
+        if (viewPending) {
+            filtered = newsItems.filter(item => item.status === 'pending');
+        } else {
+            // Default: show approved or ones without status (backwards compat)
+            filtered = newsItems.filter(item => !item.status || item.status === 'approved');
+        }
 
-    const stats = useMemo(() => ({
-        total: newsItems.length,
-        urgent: newsItems.filter(n => n.type === 'Urgent').length,
-        events: newsItems.filter(n => n.type === 'Event').length,
-    }), [newsItems]);
+        if (activeFilter !== 'All') {
+            filtered = filtered.filter(item => item.type === activeFilter);
+        }
+        return filtered;
+    }, [newsItems, activeFilter, viewPending]);
+
+    const stats = useMemo(() => {
+        const approvedOnly = newsItems.filter(n => !n.status || n.status === 'approved');
+        return {
+            total: approvedOnly.length,
+            urgent: approvedOnly.filter(n => n.type === 'Urgent').length,
+            events: approvedOnly.filter(n => n.type === 'Event').length,
+            pending: newsItems.filter(n => n.status === 'pending').length
+        };
+    }, [newsItems]);
 
     const formatDate = (timestamp) => {
         if (!timestamp) return '';
@@ -80,6 +87,28 @@ export default function NewsPage() {
     };
 
     const isAdminOrTeacher = user?.role === 'admin' || user?.role === 'teacher';
+
+    const handleApprove = async (id) => {
+        if (!isAdminOrTeacher) return;
+        try {
+            await updateDoc(doc(db, 'news', id), { status: 'approved' });
+            alert("News approved successfully!");
+        } catch (err) {
+            console.error("Error approving news:", err);
+            alert("Failed to approve news.");
+        }
+    };
+
+    const handleReject = async (id) => {
+        if (!isAdminOrTeacher) return;
+        if (!confirm("Are you sure you want to reject and delete this news request?")) return;
+        try {
+            await deleteDoc(doc(db, 'news', id));
+        } catch (err) {
+            console.error("Error rejecting news:", err);
+            alert("Failed to reject news.");
+        }
+    };
 
     if (loading) return (
         <div className={styles.loadingWrapper}>
@@ -133,11 +162,22 @@ export default function NewsPage() {
                 {/* ── ADMIN CONTROLS ── */}
                 {isAdminOrTeacher && (
                     <ScrollReveal delay={50}>
-                        <div className={styles.adminControls}>
-                            <div style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>📢 You have permission to post official news.</div>
-                            <Link href="/news/create" className={styles.postNewsBtn} style={{ textDecoration: 'none' }}>
-                                + Post Announcement
-                            </Link>
+                        <div className={styles.adminControls} style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <div style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>📢 You have permission to post & moderate news.</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button 
+                                    className={`${styles.postNewsBtn} ${viewPending ? styles.filterChipActive : ''}`}
+                                    onClick={() => setViewPending(!viewPending)}
+                                    style={{ background: viewPending ? 'var(--accent)' : 'transparent', border: '1px solid var(--border)', color: viewPending ? '#fff' : 'var(--text-primary)' }}
+                                >
+                                    {viewPending ? 'Viewing Pending' : `Pending Verification (${stats.pending})`}
+                                </button>
+                                <Link href="/news/create" className={styles.postNewsBtn} style={{ textDecoration: 'none' }}>
+                                    + Post Announcement
+                                </Link>
+                            </div>
                         </div>
                     </ScrollReveal>
                 )}
@@ -175,27 +215,41 @@ export default function NewsPage() {
                             return (
                                 <div
                                     key={item.id}
-                                    className={`${styles.newsCard} ${isFeatured ? styles.featuredCard : ''}`}
+                                    className={`${styles.newsCard} ${isFeatured && !viewPending ? styles.featuredCard : ''}`}
                                     style={{
                                         animationDelay: `${(index % 6) * 60}ms`,
-                                        '--card-accent': meta.color,
+                                        '--card-accent': viewPending ? '#f59e0b' : meta.color,
                                     }}
                                 >
                                     {/* Top accent strip */}
-                                    <div className={styles.cardTopStrip} style={{ background: meta.gradient }}></div>
+                                    <div className={styles.cardTopStrip} style={{ background: viewPending ? '#f59e0b' : meta.gradient }}></div>
 
                                     <div className={styles.newsTop}>
-                                        <span className={getTagClass(item.type)}>{item.type || 'General'}</span>
+                                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                            <span className={getTagClass(item.type)}>{item.type || 'General'}</span>
+                                            {item.status === 'pending' && (
+                                                <span className={styles.tagUrgent} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                                                    Pending
+                                                </span>
+                                            )}
+                                        </div>
                                         <span className={styles.newsDate}>{formatDate(item.timestamp)}</span>
                                     </div>
                                     <div className={styles.newsContent}>
-                                        <h3 className={styles.newsTitle} style={{ fontSize: isFeatured ? '2rem' : undefined }}>{item.title}</h3>
+                                        <h3 className={styles.newsTitle} style={{ fontSize: isFeatured && !viewPending ? '2rem' : undefined }}>{item.title}</h3>
                                         <p className={styles.newsBody}>{item.content}</p>
                                     </div>
-                                    <div className={styles.newsFooter}>
-                                        <span className={styles.readMore}>
-                                            Read more <span className={styles.readMoreArrow}>→</span>
-                                        </span>
+                                    <div className={styles.newsFooter} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        {viewPending && isAdminOrTeacher ? (
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button onClick={() => handleApprove(item.id)} style={{ padding: '4px 12px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Approve</button>
+                                                <button onClick={() => handleReject(item.id)} style={{ padding: '4px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}>Reject</button>
+                                            </div>
+                                        ) : (
+                                            <span className={styles.readMore}>
+                                                Read more <span className={styles.readMoreArrow}>→</span>
+                                            </span>
+                                        )}
                                         {item.authorName && (
                                             <span className={styles.newsAuthor}>By {item.authorName}</span>
                                         )}

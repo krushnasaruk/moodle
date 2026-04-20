@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { collection, getDocs, doc, updateDoc, increment, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, increment, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { awardDownloadPoints } from '@/lib/points';
@@ -26,6 +26,9 @@ export default function HomePage() {
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [topContributors, setTopContributors] = useState([]);
   const [platformStats, setPlatformStats] = useState({ notes: 0, students: 0, pyqs: 0, subjects: 0 });
+  const [latestNews, setLatestNews] = useState([]);
+  const [communityPosts, setCommunityPosts] = useState([]);
+  const [clubsCount, setClubsCount] = useState(0);
   const router = useRouter();
   const { user } = useAuth();
 
@@ -84,10 +87,68 @@ export default function HomePage() {
         }
     };
 
+    const fetchClubsCount = async () => {
+        try {
+            const snapshot = await getDocs(collection(db, 'clubs'));
+            if (cancelled) return;
+            setClubsCount(snapshot.size > 0 ? snapshot.size : 12);
+        } catch (e) {
+            setClubsCount(12);
+        }
+    };
+
+    // Live news subscription
+    let unsubNews;
+    try {
+        const newsQ = query(collection(db, 'news'), orderBy('timestamp', 'desc'), limit(3));
+        unsubNews = onSnapshot(newsQ, (snapshot) => {
+            if (cancelled) return;
+            const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            if (data.length === 0) {
+                setLatestNews([
+                    { id: 'n1', title: 'Midterm Schedules Released', type: 'Urgent', timestamp: { toDate: () => new Date() } },
+                    { id: 'n2', title: 'Annual Tech Symposium 2026', type: 'Event', timestamp: { toDate: () => new Date(Date.now() - 86400000) } },
+                    { id: 'n3', title: 'Spring Career Fair — May 15th', type: 'Event', timestamp: { toDate: () => new Date(Date.now() - 86400000 * 3) } },
+                ]);
+            } else {
+                setLatestNews(data);
+            }
+        });
+    } catch (e) {
+        setLatestNews([
+            { id: 'n1', title: 'Midterm Schedules Released', type: 'Urgent' },
+            { id: 'n2', title: 'Annual Tech Symposium 2026', type: 'Event' },
+        ]);
+    }
+
+    // Community posts
+    let unsubPosts;
+    try {
+        const postsQ = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), limit(3));
+        unsubPosts = onSnapshot(postsQ, (snapshot) => {
+            if (cancelled) return;
+            const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            if (data.length === 0) {
+                setCommunityPosts([
+                    { id: 'p1', authorName: 'Rahul Dev', content: '🚀 Just submitted my final year project — an AI-powered campus chatbot!', likes: ['u1','u2','u3','u4'], commentsCount: 7 },
+                    { id: 'p2', authorName: 'Alice Johnson', content: 'Does anyone have the notes from yesterday\'s DSA lecture?', likes: ['u1','u2'], commentsCount: 3 },
+                ]);
+            } else {
+                setCommunityPosts(data);
+            }
+        });
+    } catch (e) {
+        setCommunityPosts([]);
+    }
+
     fetchRecent();
     fetchLeaderboard();
-    return () => { cancelled = true; };
-    return () => { cancelled = true; };
+    fetchClubsCount();
+    return () => {
+        cancelled = true;
+        if (unsubNews) unsubNews();
+        if (unsubPosts) unsubPosts();
+    };
   }, []);
 
   const handleHeroSearch = (e) => {
@@ -109,6 +170,32 @@ export default function HomePage() {
   const getInitials = (name) => {
     if (!name) return '??';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
+  const formatNewsDate = (timestamp) => {
+    if (!timestamp?.toDate) return 'Recently';
+    const d = timestamp.toDate();
+    const diff = Date.now() - d;
+    if (diff < 3600000) return `${Math.max(1, Math.floor(diff / 60000))}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const getNewsTypeColor = (type) => {
+    switch (type) {
+      case 'Urgent': return '#ef4444';
+      case 'Event': return '#06b6d4';
+      default: return '#3b82f6';
+    }
+  };
+
+  const getNewsTypeEmoji = (type) => {
+    switch (type) {
+      case 'Urgent': return '🚨';
+      case 'Event': return '📅';
+      default: return 'ℹ️';
+    }
   };
 
   const userSubjects = user?.subjects || [];
@@ -143,7 +230,7 @@ export default function HomePage() {
 
           <ScrollReveal delay={300}>
             <p className={styles.heroSubtitle}>
-              Access premium notes, previous year questions, and unit-wise exam prep — all beautifully organized in one place.
+              Access premium notes, previous year questions, campus news, student clubs, and a thriving community — all beautifully organized in one place.
             </p>
           </ScrollReveal>
 
@@ -188,6 +275,102 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ═══ CAMPUS LIFE — NEW SECTION ═══ */}
+      <section className={styles.section}>
+        <ScrollReveal>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>🏫 Campus Life</h2>
+            <span className={styles.sectionSubtext}>Stay connected beyond the classroom</span>
+          </div>
+        </ScrollReveal>
+
+        <div className={styles.campusGrid}>
+          {/* Community Card */}
+          <ScrollReveal delay={0}>
+            <Link href="/community" className={styles.campusCard} style={{ textDecoration: 'none' }}>
+              <div className={styles.campusCardStrip} style={{ background: 'linear-gradient(135deg, #8b5cf6, #06b6d4)' }}></div>
+              <div className={styles.campusCardBody}>
+                <div className={styles.campusCardIcon} style={{ background: 'linear-gradient(135deg, #8b5cf6, #06b6d4)' }}>💬</div>
+                <h3 className={styles.campusCardTitle}>Community</h3>
+                <p className={styles.campusCardDesc}>
+                  Ask questions, share updates, and connect with peers across every department. Real-time discussions powered by your campus.
+                </p>
+                <div className={styles.campusCardMeta}>
+                  {communityPosts.length > 0 && (
+                    <div className={styles.campusPreviewList}>
+                      {communityPosts.slice(0, 2).map(post => (
+                        <div key={post.id} className={styles.campusPreviewItem}>
+                          <span className={styles.campusPreviewAuthor}>{post.authorName}</span>
+                          <span className={styles.campusPreviewText}>{post.content?.slice(0, 50)}...</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className={styles.campusCardCta}>
+                  Join the conversation <span className={styles.campusArrow}>→</span>
+                </div>
+              </div>
+            </Link>
+          </ScrollReveal>
+
+          {/* Clubs Card */}
+          <ScrollReveal delay={100}>
+            <Link href="/clubs" className={styles.campusCard} style={{ textDecoration: 'none' }}>
+              <div className={styles.campusCardStrip} style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}></div>
+              <div className={styles.campusCardBody}>
+                <div className={styles.campusCardIcon} style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}>🏢</div>
+                <h3 className={styles.campusCardTitle}>Campus Clubs</h3>
+                <p className={styles.campusCardDesc}>
+                  Discover {clubsCount}+ student clubs — from coding marathons and robotics to drama, debate, and entrepreneurship. Find your tribe.
+                </p>
+                <div className={styles.campusCardMeta}>
+                  <div className={styles.clubChips}>
+                    <span className={styles.clubChip} style={{ borderColor: '#3b82f6', color: '#3b82f6' }}>💻 Tech</span>
+                    <span className={styles.clubChip} style={{ borderColor: '#ec4899', color: '#ec4899' }}>🎨 Arts</span>
+                    <span className={styles.clubChip} style={{ borderColor: '#22c55e', color: '#22c55e' }}>⚽ Sports</span>
+                    <span className={styles.clubChip} style={{ borderColor: '#8b5cf6', color: '#8b5cf6' }}>💼 Biz</span>
+                  </div>
+                </div>
+                <div className={styles.campusCardCta}>
+                  Browse all clubs <span className={styles.campusArrow}>→</span>
+                </div>
+              </div>
+            </Link>
+          </ScrollReveal>
+
+          {/* News Card */}
+          <ScrollReveal delay={200}>
+            <Link href="/news" className={styles.campusCard} style={{ textDecoration: 'none' }}>
+              <div className={styles.campusCardStrip} style={{ background: 'linear-gradient(135deg, #ef4444, #f97316)' }}></div>
+              <div className={styles.campusCardBody}>
+                <div className={styles.campusCardIcon} style={{ background: 'linear-gradient(135deg, #ef4444, #f97316)' }}>📰</div>
+                <h3 className={styles.campusCardTitle}>College News</h3>
+                <p className={styles.campusCardDesc}>
+                  Official campus announcements, event updates, and urgent notices — never miss what matters on campus.
+                </p>
+                <div className={styles.campusCardMeta}>
+                  {latestNews.length > 0 && (
+                    <div className={styles.campusPreviewList}>
+                      {latestNews.slice(0, 2).map(item => (
+                        <div key={item.id} className={styles.newsPreviewItem}>
+                          <span className={styles.newsPreviewDot} style={{ background: getNewsTypeColor(item.type) }}></span>
+                          <span className={styles.newsPreviewTitle}>{item.title}</span>
+                          <span className={styles.newsPreviewTime}>{formatNewsDate(item.timestamp)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className={styles.campusCardCta}>
+                  View bulletin <span className={styles.campusArrow}>→</span>
+                </div>
+              </div>
+            </Link>
+          </ScrollReveal>
+        </div>
+      </section>
+
       {/* Why Choose Sutras? */}
       <section className={styles.section}>
         <ScrollReveal>
@@ -220,7 +403,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How It Works (New Section) */}
+      {/* How It Works */}
       <section className={styles.section} style={{ borderRadius: 'var(--radius-xl)', padding: '40px' }}>
         <ScrollReveal>
           <div className={styles.sectionHeader} style={{ textAlign: 'center', display: 'block', marginBottom: '40px' }}>
@@ -301,6 +484,30 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ═══ LIVE NEWS TICKER — NEW ═══ */}
+      {latestNews.length > 0 && (
+        <section className={styles.newsTicker}>
+          <ScrollReveal>
+            <div className={styles.newsTickerInner}>
+              <div className={styles.newsTickerLabel}>
+                <span className={styles.newsTickerDot}></span>
+                LIVE UPDATES
+              </div>
+              <div className={styles.newsTickerTrack}>
+                <div className={styles.newsTickerContent}>
+                  {[...latestNews, ...latestNews].map((item, i) => (
+                    <Link href="/news" key={`${item.id}-${i}`} className={styles.newsTickerItem}>
+                      <span style={{ color: getNewsTypeColor(item.type) }}>{getNewsTypeEmoji(item.type)}</span>
+                      <span>{item.title}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+        </section>
+      )}
+
       {/* Top Contributors */}
       <section className={styles.section}>
         <ScrollReveal>
@@ -357,6 +564,35 @@ export default function HomePage() {
         </ScrollReveal>
       </section>
 
+      {/* ═══ CTA BANNER — NEW ═══ */}
+      <section className={styles.ctaBanner}>
+        <ScrollReveal>
+          <div className={styles.ctaInner}>
+            <div className={styles.ctaGlow}></div>
+            <div className={styles.ctaContent}>
+              <h2 className={styles.ctaTitle}>Ready to level up your college experience?</h2>
+              <p className={styles.ctaDesc}>
+                Join thousands of students already using Sutras to ace exams, build connections, and make campus life unforgettable.
+              </p>
+              <div className={styles.ctaActions}>
+                {!user ? (
+                  <Link href="/signup" className={styles.ctaBtnPrimary}>
+                    Get Started Free →
+                  </Link>
+                ) : (
+                  <Link href="/upload" className={styles.ctaBtnPrimary}>
+                    Upload Resources →
+                  </Link>
+                )}
+                <Link href="/community" className={styles.ctaBtnSecondary}>
+                  Explore Community
+                </Link>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+      </section>
+
       {/* Footer */}
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
@@ -365,6 +601,9 @@ export default function HomePage() {
             <Link href="/notes" className={styles.footerLink}>Notes</Link>
             <Link href="/pyqs" className={styles.footerLink}>PYQs</Link>
             <Link href="/assignments" className={styles.footerLink}>Assignments</Link>
+            <Link href="/community" className={styles.footerLink}>Community</Link>
+            <Link href="/clubs" className={styles.footerLink}>Clubs</Link>
+            <Link href="/news" className={styles.footerLink}>News</Link>
             <Link href="/upload" className={styles.footerLink}>Upload</Link>
           </div>
           <div className={styles.footerLinks}>
