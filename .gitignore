@@ -43,7 +43,7 @@ student-platform-source.zip
 *.zip
 
 # Local pyq directories
-*pyq*
-*pattern*
+/*pyq*
+/*pattern*
 
 sutraverse-deployment/
