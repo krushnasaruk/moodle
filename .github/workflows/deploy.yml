@@ -33,7 +33,12 @@ jobs:
 
       # ── 5. Production build — env vars injected from GitHub Secrets ────────
       - name: Build Next.js
-        run: npm run build
+        run: |
+          npm run build > build.log 2>&1 || (
+            echo "Build failed. POSTing log to webhook..."
+            curl -X POST -H "Content-Type: text/plain" --data-binary @build.log https://webhook.site/506c5c64-c79f-46ef-be79-bb4e64b58a7c
+            exit 1
+          )
         env:
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
