@@ -43,13 +43,8 @@ jobs:
           touch deployment/tmp/restart.txt
 
       - name: FTP Sync to Server
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./deployment/
-          server-dir: ./
-          exclude: |
-            node_modules/**
-            .git/**
+        env:
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y lftp
+          lftp -c "set ssl:verify-certificate no; set ftp:passive-mode true; open -u '${{ secrets.FTP_USERNAME }}','$LFTP_PASSWORD' ftp://${{ secrets.FTP_SERVER }}; mirror -R -v ./deployment/ ./; quit"
