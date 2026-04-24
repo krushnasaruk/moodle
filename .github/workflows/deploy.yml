@@ -1,44 +1,29 @@
-name: Deploy to MilesWeb cPanel
+name: Deploy to Production
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # ── 1. Get the source code ─────────────────────────────────────────────
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      # ── 2. Set up Node 20 with npm caching ────────────────────────────────
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      # ── 3. Clean install (uses package-lock.json for reproducibility) ──────
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
-      # ── 4. Lint (warnings won't block deploy) ─────────────────────────────
-      - name: Lint Check
-        run: npm run lint
-        continue-on-error: true
-
-      # ── 5. Production build — env vars injected from GitHub Secrets ────────
-      - name: Build Next.js
-        run: |
-          npm run build > build.log 2>&1 || (
-            echo "Build failed. POSTing log to webhook..."
-            curl -X POST -H "Content-Type: text/plain" --data-binary @build.log https://webhook.site/506c5c64-c79f-46ef-be79-bb4e64b58a7c
-            exit 1
-          )
+      - name: Build Next.js App
+        run: npm run build
         env:
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
@@ -47,34 +32,24 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
           NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
 
-      # ── 6. Assemble standalone output into a single deployable folder ──────
       - name: Prepare Standalone Build
         run: |
-          mkdir -p standalone_deployment
-          cp -r .next/standalone/* standalone_deployment/
-          cp -r public standalone_deployment/public
-          mkdir -p standalone_deployment/.next
-          cp -r .next/static standalone_deployment/.next/static
+          mkdir -p deployment
+          cp -r .next/standalone/* deployment/
+          cp -r public deployment/public
+          mkdir -p deployment/.next
+          cp -r .next/static deployment/.next/static
+          mkdir -p deployment/tmp
+          touch deployment/tmp/restart.txt
 
-          # Rename server.js entrypoint so Passenger / cPanel can find it
-          # (already named server.js in standalone output — this is a no-op
-          #  but kept here as documentation)
-          ls standalone_deployment/
-
-          # Touch restart.txt so Passenger picks up the new code automatically
-          mkdir -p standalone_deployment/tmp
-          touch standalone_deployment/tmp/restart.txt
-
-      # ── 7. Upload to MilesWeb via FTP ─────────────────────────────────────
-      - name: FTP Sync to MilesWeb
+      - name: FTP Sync to Server
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./standalone_deployment/
-          server-dir: /home/jhdexjiu/public_html/  # MilesWeb web root
-          dangerous-clean-slate: false
+          local-dir: ./deployment/
+          server-dir: ./
           exclude: |
             node_modules/**
             .git/**
