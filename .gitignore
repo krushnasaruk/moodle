@@ -38,3 +38,12 @@ yarn-error.log*
 next-env.d.ts
 deploy.zip
 student-platform-source.zip
+
+# Large archive files
+*.zip
+
+# Local pyq directories
+*pyq*
+*pattern*
+
+sutraverse-deployment/

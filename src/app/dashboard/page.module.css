@@ -72,7 +72,7 @@
     position: relative;
     overflow: hidden;
     /* Soft internal glow border */
-    box-shadow: inset 0 0 50px rgba(255, 255, 255, 0.05), var(--shadow-glass);
+    box-shadow: var(--shadow-card);
 }
 
 .profileHeader::before {
@@ -98,7 +98,7 @@
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--border);
     box-shadow: 0 0 40px var(--primary-glow);
     overflow: hidden;
     display: block;
@@ -116,7 +116,7 @@
     font-size: 3rem;
     font-family: var(--font-heading);
     border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--border);
     box-shadow: 0 0 40px var(--primary-glow);
     overflow: hidden;
 }
@@ -131,7 +131,7 @@
     font-size: 2.5rem;
     font-weight: 800;
     color: var(--text-primary);
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    text-shadow: none;
     margin-bottom: 2px;
 }
 
@@ -168,15 +168,15 @@
     font-size: 0.875rem;
     font-weight: 700;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 10px var(--primary-glow);
 }
 
 .progressContainer {
     margin-top: 24px;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--bg-elevated);
     padding: 16px;
     border-radius: var(--radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-subtle);
     max-width: 400px;
     backdrop-filter: blur(10px);
 }
@@ -246,7 +246,7 @@
 
 .bentoTile:hover {
     transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(138, 43, 226, 0.1);
+    box-shadow: var(--shadow-card);
 }
 
 .bentoTile:hover::after {
@@ -282,7 +282,7 @@
 
 .editBtn {
     padding: 6px 16px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-elevated);
     color: var(--text-primary);
     border: 1px solid var(--border);
     border-radius: var(--radius-full);
@@ -354,7 +354,7 @@
 
 .subjectChip {
     padding: 6px 14px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-elevated);
     border: 1px solid var(--border);
     color: var(--text-secondary);
     border-radius: var(--radius-full);
@@ -387,7 +387,7 @@
 
 .editField select, .editField input {
     padding: 14px 16px;
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--bg-input);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
     color: var(--text-primary);
@@ -403,8 +403,8 @@
 .editField select:focus, .editField input:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.4);
-    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 0 2px var(--primary-glow);
+    background: var(--bg-input);
 }
 
 .editActions {
@@ -412,14 +412,14 @@
     gap: var(--space-md);
     justify-content: flex-end;
     padding-top: var(--space-lg);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--border-subtle);
 }
 
 .cancelBtn {
     padding: 12px 24px;
     background: transparent;
     color: var(--text-secondary);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-weight: 700;
     cursor: pointer;
@@ -427,7 +427,7 @@
 }
 
 .cancelBtn:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-elevated);
     color: white;
 }
 
@@ -462,10 +462,10 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    background: rgba(255,255,255,0.03);
+    background: var(--bg-subtle);
     padding: 16px;
     border-radius: var(--radius-md);
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid var(--border-subtle);
 }
 
 .bentoStatNum {
@@ -493,7 +493,7 @@
 }
 
 .badgeItem {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-elevated);
     border: 1px solid var(--border);
     border-left-width: 4px;
     padding: 10px 16px;
@@ -522,14 +522,14 @@
     align-items: center;
     gap: var(--space-lg);
     padding: 16px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     transition: all var(--transition-fast);
 }
 
 .uploadItem:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-elevated);
     border-color: rgba(255, 255, 255, 0.15);
     transform: translateX(4px);
 }
@@ -580,8 +580,8 @@
 .emptyStateGamified {
     padding: var(--space-3xl);
     text-align: center;
-    background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(0, 229, 255, 0.05));
-    border: 1px dashed rgba(138, 43, 226, 0.4);
+    background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+    border: 1px dashed var(--primary);
     border-radius: var(--radius-xl);
     margin-top: var(--space-lg);
 }
@@ -599,8 +599,8 @@
 }
 
 .streakModule {
-    background: rgba(30,30,40, 0.4);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
     padding: 12px;
     margin-top: 16px;
@@ -635,7 +635,7 @@
 .dot_present { background-color: var(--success); box-shadow: 0 0 8px rgba(34, 197, 94, 0.5); }
 .dot_absent { background-color: var(--error); box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
 .dot_late { background-color: var(--warning); box-shadow: 0 0 8px rgba(245, 158, 11, 0.5); }
-.dot_excused { background-color: var(--primary-light); box-shadow: 0 0 8px rgba(138, 43, 226, 0.5); }
+.dot_excused { background-color: var(--primary-light); box-shadow: 0 0 8px var(--primary-glow); }
 
 /* --- Leave Request Modals and Pills --- */
 .request_pending { border-left: 4px solid var(--warning) !important; }
@@ -667,9 +667,9 @@
 }
 
 .modalContent {
-    background: rgba(20, 20, 25, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
     padding: 30px;
     border-radius: var(--radius-lg);
     width: 100%;
@@ -695,7 +695,7 @@
 }
 
 .btnSecondary {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-elevated);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
     padding: 10px 16px;
@@ -706,8 +706,8 @@
 }
 
 .btnSecondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--bg-elevated);
+    border-color: var(--border);
     transform: translateY(-2px);
 }
 
@@ -719,12 +719,12 @@
     text-decoration: none;
     border-radius: var(--radius-md);
     font-weight: 700;
-    box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+    box-shadow: 0 4px 15px var(--primary-glow);
     transition: all 0.3s ease;
 }
 .btnBounty:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(138, 43, 226, 0.6);
+    box-shadow: 0 8px 25px var(--primary-glow);
 }
 
 /* --- Live Session Bio-Metric Scanner --- */
@@ -850,7 +850,7 @@
     align-items: center;
     margin-bottom: var(--space-xl);
     padding-bottom: var(--space-md);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .hubGrid {
@@ -863,10 +863,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-elevated);
     padding: var(--space-xl);
     border-radius: var(--radius-xl);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
 }
 
 .attendanceBox h3 {
@@ -881,7 +881,7 @@
     width: 150px;
     height: 150px;
     margin-bottom: var(--space-lg);
-    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.05));
+    filter: none;
 }
 
 .circularChart {
@@ -922,7 +922,7 @@
 .attStatsRow {
     display: flex;
     gap: 20px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-elevated);
     padding: 10px 20px;
     border-radius: var(--radius-full);
 }
@@ -955,16 +955,16 @@
 }
 
 .announcementCard {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     padding: var(--space-md) var(--space-lg);
     border-radius: var(--radius-lg);
     transition: all var(--transition-fast);
 }
 
 .announcementCard:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--bg-elevated);
+    border-color: var(--border);
 }
 
 .annMeta {
@@ -987,7 +987,7 @@
     padding: var(--space-2xl);
     text-align: center;
     color: var(--text-muted);
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-elevated);
     border-radius: var(--radius-lg);
 }
 
@@ -1002,7 +1002,7 @@
     height: 36px;
     border-radius: 50%;
     background: var(--gradient-brand);
-    border: 2px solid rgba(0, 0, 0, 0.6);
+    border: 2px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1010,14 +1010,14 @@
     cursor: pointer;
     z-index: 3;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 0;
     color: white;
 }
 
 .avatarEditOverlay:hover {
     transform: scale(1.15);
-    box-shadow: 0 6px 20px rgba(138, 43, 226, 0.5);
+    box-shadow: 0 6px 20px var(--primary-glow);
 }
 
 /* ======================================================== */
@@ -1029,8 +1029,8 @@
     gap: 30px;
     margin-bottom: 30px;
     padding: 30px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-xl);
 }
 
@@ -1040,8 +1040,8 @@
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 0 20px rgba(138, 43, 226, 0.2);
+    border: 2px solid var(--border);
+    box-shadow: 0 0 20px var(--primary-glow);
 }
 
 .avatarUploadPreview img {
@@ -1072,8 +1072,8 @@
 
 .avatarUploadBtn {
     padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
     color: var(--text-primary);
     font-weight: 600;
@@ -1085,7 +1085,7 @@
 }
 
 .avatarUploadBtn:hover {
-    background: rgba(138, 43, 226, 0.2);
+    background: var(--primary-glow);
     border-color: var(--primary-light);
     color: var(--primary-light);
 }
@@ -1104,4 +1104,202 @@
     .progressContainer { margin: 24px auto 0; }
     .avatarUploadSection { flex-direction: column; text-align: center; }
     .avatarUploadBtn { align-self: center; }
+}
+
+@media (max-width: 768px) {
+    .pageWrapper {
+        padding-top: calc(var(--navbar-height) + var(--space-md));
+    }
+
+    .pageInner {
+        padding: 0 var(--space-md) 100px;
+    }
+
+    .profileHeader {
+        padding: var(--space-xl) var(--space-lg);
+    }
+
+    .profileAvatar {
+        width: 90px;
+        height: 90px;
+    }
+
+    .profileInfo h1 {
+        font-size: 1.8rem;
+    }
+
+    .profileInfo p {
+        font-size: 0.88rem;
+    }
+
+    .levelBadge {
+        font-size: 0.72rem;
+        padding: 5px 12px;
+    }
+
+    .sectionTitle {
+        font-size: 1.1rem;
+    }
+
+    .bentoTile {
+        padding: var(--space-lg);
+    }
+
+    .profileGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .editGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .uploadItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+    }
+
+    .uploadStats {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .liveSessionBanner {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-sm);
+    }
+
+    .btnVerifyGeo {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .attStatsRow {
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .badgesWrapper {
+        justify-content: center;
+    }
+
+    .modalContent {
+        padding: 20px;
+        margin: 0 var(--space-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .pageInner {
+        padding: 0 var(--space-sm) 100px;
+    }
+
+    .profileHeader {
+        padding: var(--space-lg) var(--space-md);
+    }
+
+    .profileAvatar {
+        width: 72px;
+        height: 72px;
+    }
+
+    .profileAvatarFallback {
+        font-size: 2rem;
+    }
+
+    .profileInfo h1 {
+        font-size: 1.5rem;
+    }
+
+    .profileInfo p {
+        font-size: 0.82rem;
+    }
+
+    .pointsBadge {
+        font-size: 0.78rem;
+        padding: 4px 10px;
+    }
+
+    .progressContainer {
+        padding: 12px;
+    }
+
+    .bentoTile {
+        padding: var(--space-md);
+    }
+
+    .sectionTitle {
+        font-size: 1rem;
+        gap: 8px;
+    }
+
+    .bentoStatNum {
+        font-size: 1.4rem;
+    }
+
+    .bentoStatLabel {
+        font-size: 0.75rem;
+    }
+
+    .uploadTitle {
+        font-size: 0.88rem;
+    }
+
+    .uploadMeta {
+        font-size: 0.72rem;
+    }
+
+    .uploadIcon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .editField select,
+    .editField input {
+        padding: 10px 12px;
+        font-size: 0.88rem;
+    }
+
+    .editActions {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .saveBtn,
+    .cancelBtn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .avatarUploadSection {
+        padding: var(--space-lg);
+    }
+
+    .avatarUploadPreview {
+        width: 72px;
+        height: 72px;
+    }
+
+    .ringWrapper {
+        width: 120px;
+        height: 120px;
+    }
+
+    .ringPercent {
+        font-size: 1.6rem;
+    }
+
+    .webcamWrapper {
+        max-width: 100%;
+    }
+
+    .streakModule {
+        padding: 10px;
+    }
+
+    .timeline {
+        flex-wrap: wrap;
+    }
 }

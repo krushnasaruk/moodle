@@ -89,25 +89,14 @@ export default function UploadPage() {
         try {
             if (!storage || !db) throw new Error("Firebase is not initialized. Please check network connection.");
 
-            // 1. Upload to Next.js Local Storage API
+            // 1. Upload to Firebase Storage
             const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-            const formData = new FormData();
-            formData.append('file', file);
+            const uniqueName = Date.now() + '_' + safeName;
+            const fileRef = ref(storage, `uploads/${uniqueName}`);
             
-            // Upload to our local API route instead of Google Cloud
-            const uploadResponse = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData
-            });
+            await uploadBytesResumable(fileRef, file);
+            const downloadURL = await getDownloadURL(fileRef);
 
-            if (!uploadResponse.ok) {
-                const errorData = await uploadResponse.json();
-                throw new Error(errorData.error || "Failed to upload file to local server");
-            }
-
-            const uploadData = await uploadResponse.json();
-            const downloadURL = uploadData.url;
-            
             clearInterval(progressInterval);
 
             setUploadProgress(95);

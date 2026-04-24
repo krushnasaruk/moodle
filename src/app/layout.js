@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import Navbar from '@/components/Navbar/Navbar';
+import MobileNav from '@/components/MobileNav/MobileNav';
 import CustomCursor from '@/components/CustomCursor';
 import CookieConsent from '@/components/CookieConsent';
 
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
             <CustomCursor />
             <Navbar />
             <main>{children}</main>
+            <MobileNav />
             <CookieConsent />
           </AuthProvider>
         </ThemeProvider>

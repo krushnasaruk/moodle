@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { collection, getDocs, doc, updateDoc, increment, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { awardDownloadPoints } from '@/lib/points';
-import { ScrollReveal, TextReveal, CountUp } from '@/components/Animations';
+import { ScrollReveal, CountUp } from '@/components/Animations';
 import styles from './page.module.css';
 import { IconNotes, IconPyq, IconAssignment, IconSparkles, IconUser, IconFolder, IconHat, IconStar, IconDownload } from '@/components/Icons';
+import { Skeleton, SkeletonGrid } from '@/components/Skeleton/Skeleton';
 
 function getTypeClass(type) {
   switch (type) {
@@ -31,6 +32,7 @@ export default function HomePage() {
   const [clubsCount, setClubsCount] = useState(0);
   const router = useRouter();
   const { user } = useAuth();
+  const heroRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -100,7 +102,7 @@ export default function HomePage() {
     // Live news subscription
     let unsubNews;
     try {
-        const newsQ = query(collection(db, 'news'), orderBy('timestamp', 'desc'), limit(3));
+        const newsQ = query(collection(db, 'news'), orderBy('timestamp', 'desc'), limit(5));
         unsubNews = onSnapshot(newsQ, (snapshot) => {
             if (cancelled) return;
             const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -212,268 +214,312 @@ export default function HomePage() {
   const displayFiles = recommended.length > 0 ? recommended : recentFiles;
   const sectionLabel = userSubjects.length > 0 && recommended.length > 0 ? '🎯 Recommended for You' : '📌 Recent Uploads';
 
+  const rankEmojis = ['🥇', '🥈', '🥉', '🏅'];
+
   return (
     <>
-      <div className={styles.heroBackgroundAnimation}></div>
-      {/* Hero */}
-      <section className={styles.hero}>
-        <div className={styles.heroContent}>
-          <ScrollReveal delay={0}>
-            <span className={styles.heroTag}>🚀 Sutras — The Student OS</span>
-          </ScrollReveal>
+      {/* ══════════════════════════════════════════════════ */}
+      {/* ═══ HERO — IMMERSIVE LANDING ═══════════════════ */}
+      {/* ══════════════════════════════════════════════════ */}
+      <section className={styles.hero} ref={heroRef}>
+        {/* Floating orbs */}
+        <div className={styles.heroOrb1}></div>
+        <div className={styles.heroOrb2}></div>
+        <div className={styles.heroOrb3}></div>
+
+        <div className={styles.heroInner}>
+          <div className={styles.heroBadge}>
+            <span className={styles.heroBadgeDot}></span>
+            Student OS — Built for Campus Life
+          </div>
 
           <h1 className={styles.heroTitle}>
-            <TextReveal text="Find Notes. Ace Exams." tag="span" delay={150} />
-            <br />
-            <span className={`${styles.heroTitleAccent} text-shimmer`}>Study Smarter.</span>
+            <span className={styles.heroLine1}>Your College,</span>
+            <span className={styles.heroLine2}>
+              <span className={styles.heroGradientText}>Simplified.</span>
+            </span>
           </h1>
 
-          <ScrollReveal delay={300}>
-            <p className={styles.heroSubtitle}>
-              Access premium notes, previous year questions, campus news, student clubs, and a thriving community — all beautifully organized in one place.
-            </p>
-          </ScrollReveal>
+          <p className={styles.heroSubtitle}>
+            Notes, PYQs, clubs, community, and campus news — beautifully organized in one platform that students actually love using.
+          </p>
 
-          <ScrollReveal delay={500}>
-            <form className={styles.heroSearch} onSubmit={handleHeroSearch}>
-              <input
-                type="text"
-                className={styles.heroSearchInput}
-                placeholder="Search for DBMS, DSA basics, or unit summaries..."
-                value={heroQuery}
-                onChange={(e) => setHeroQuery(e.target.value)}
-              />
-              <button type="submit" className={styles.heroSearchBtn}>Search</button>
-            </form>
-          </ScrollReveal>
+          <form className={styles.heroSearchBar} onSubmit={handleHeroSearch}>
+            <span className={styles.heroSearchIcon}>🔍</span>
+            <input
+              type="text"
+              className={styles.heroSearchInput}
+              placeholder="Search for DBMS notes, DSA questions, Physics..."
+              value={heroQuery}
+              onChange={(e) => setHeroQuery(e.target.value)}
+            />
+            <button type="submit" className={styles.heroSearchBtn}>
+              Search
+            </button>
+          </form>
+
+          {/* Floating stat pills */}
+          <div className={styles.heroStatPills}>
+            <div className={styles.heroPill}>
+              <span className={styles.heroPillIcon}>📄</span>
+              <span><CountUp end={platformStats.notes} suffix="+" /> Notes</span>
+            </div>
+            <div className={styles.heroPill}>
+              <span className={styles.heroPillIcon}>👥</span>
+              <span><CountUp end={platformStats.students} suffix="+" /> Students</span>
+            </div>
+            <div className={styles.heroPill}>
+              <span className={styles.heroPillIcon}>🏢</span>
+              <span><CountUp end={clubsCount} suffix="+" /> Clubs</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Quick Access */}
-      <section className={styles.quickAccess}>
-        <div className={`${styles.quickGrid} stagger-children`}>
-          <Link href="/notes" className={`${styles.quickCard} hover-lift`}>
-            <div className={`${styles.quickIcon} ${styles.quickIconNotes}`}><IconNotes size={28} /></div>
-            <div className={styles.quickTitle}>Notes</div>
-            <div className={styles.quickDesc}>Subject-wise study material</div>
-          </Link>
-          <Link href="/pyqs" className={`${styles.quickCard} hover-lift`}>
-            <div className={`${styles.quickIcon} ${styles.quickIconPyqs}`}><IconPyq size={28} /></div>
-            <div className={styles.quickTitle}>PYQs</div>
-            <div className={styles.quickDesc}>Previous year questions</div>
-          </Link>
-          <Link href="/assignments" className={`${styles.quickCard} hover-lift`}>
-            <div className={`${styles.quickIcon} ${styles.quickIconAssign}`}><IconAssignment size={28} /></div>
-            <div className={styles.quickTitle}>Assignments</div>
-            <div className={styles.quickDesc}>Ready solutions & code</div>
-          </Link>
-          <Link href="/exam-mode" className={`${styles.quickCard} hover-lift`}>
-            <div className={`${styles.quickIcon} ${styles.quickIconExam}`}><IconSparkles size={28} /></div>
-            <div className={styles.quickTitle}>Exam Mode</div>
-            <div className={styles.quickDesc}>Last night prep</div>
-          </Link>
+      {/* ══════════════════════════════════════════════════ */}
+      {/* ═══ QUICK ACCESS — FLOATING DOCK ════════════════ */}
+      {/* ══════════════════════════════════════════════════ */}
+      <section className={styles.dockSection}>
+        <div className={styles.dockContainer}>
+          {[
+            { href: '/notes', icon: <IconNotes size={26} />, label: 'Notes', color: '#3b82f6', desc: 'Study material' },
+            { href: '/assistant', icon: null, emoji: '🤖', label: 'AI Tutor', color: '#8b5cf6', desc: 'Study help' },
+            { href: '/pyqs', icon: <IconPyq size={26} />, label: 'PYQs', color: '#22d3ee', desc: 'Past papers' },
+            { href: '/assignments', icon: <IconAssignment size={26} />, label: 'Assignments', color: '#f472b6', desc: 'Solutions' },
+            { href: '/community', icon: null, emoji: '💬', label: 'Community', color: '#06b6d4', desc: 'Discussions' },
+            { href: '/clubs', icon: null, emoji: '🏢', label: 'Clubs', color: '#ef4444', desc: 'Campus clubs' },
+            { href: '/news', icon: null, emoji: '📰', label: 'News', color: '#10b981', desc: 'Announcements' },
+          ].map((item, i) => (
+            <ScrollReveal key={item.href} delay={i * 60}>
+              <Link href={item.href} className={styles.dockItem}>
+                <div className={styles.dockIcon} style={{ background: `${item.color}18`, color: item.color }}>
+                  {item.icon || <span style={{ fontSize: '1.4rem' }}>{item.emoji}</span>}
+                </div>
+                <span className={styles.dockLabel}>{item.label}</span>
+                <span className={styles.dockDesc}>{item.desc}</span>
+              </Link>
+            </ScrollReveal>
+          ))}
         </div>
       </section>
 
-      {/* ═══ CAMPUS LIFE — NEW SECTION ═══ */}
-      <section className={styles.section}>
+      {/* ══════════════════════════════════════════════════ */}
+      {/* ═══ LIVE NEWS TICKER ════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════ */}
+      {latestNews.length > 0 && (
+        <section className={styles.tickerSection}>
+          <div className={styles.tickerBar}>
+            <div className={styles.tickerLabel}>
+              <span className={styles.tickerDot}></span>
+              LIVE
+            </div>
+            <div className={styles.tickerTrack}>
+              <div className={styles.tickerSlide}>
+                {[...latestNews, ...latestNews].map((item, i) => (
+                  <Link href="/news" key={`${item.id}-${i}`} className={styles.tickerItem}>
+                    <span style={{ color: getNewsTypeColor(item.type) }}>{getNewsTypeEmoji(item.type)}</span>
+                    <span>{item.title}</span>
+                    <span className={styles.tickerTime}>{formatNewsDate(item.timestamp)}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════ */}
+      {/* ═══ CAMPUS LIFE — MAGAZINE LAYOUT ══════════════ */}
+      {/* ══════════════════════════════════════════════════ */}
+      <section className={styles.campusSection}>
         <ScrollReveal>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>🏫 Campus Life</h2>
-            <span className={styles.sectionSubtext}>Stay connected beyond the classroom</span>
+          <div className={styles.campusHeader}>
+            <div className={styles.campusHeaderLeft}>
+              <span className={styles.campusBadge}>🏫 Beyond the classroom</span>
+              <h2 className={styles.campusTitle}>Campus Life</h2>
+              <p className={styles.campusSubtitle}>Connect, collaborate, and never miss what's happening on campus.</p>
+            </div>
           </div>
         </ScrollReveal>
 
         <div className={styles.campusGrid}>
-          {/* Community Card */}
+          {/* ── COMMUNITY — Hero Card ── */}
           <ScrollReveal delay={0}>
-            <Link href="/community" className={styles.campusCard} style={{ textDecoration: 'none' }}>
-              <div className={styles.campusCardStrip} style={{ background: 'linear-gradient(135deg, #8b5cf6, #06b6d4)' }}></div>
-              <div className={styles.campusCardBody}>
-                <div className={styles.campusCardIcon} style={{ background: 'linear-gradient(135deg, #8b5cf6, #06b6d4)' }}>💬</div>
-                <h3 className={styles.campusCardTitle}>Community</h3>
-                <p className={styles.campusCardDesc}>
-                  Ask questions, share updates, and connect with peers across every department. Real-time discussions powered by your campus.
-                </p>
-                <div className={styles.campusCardMeta}>
-                  {communityPosts.length > 0 && (
-                    <div className={styles.campusPreviewList}>
-                      {communityPosts.slice(0, 2).map(post => (
-                        <div key={post.id} className={styles.campusPreviewItem}>
-                          <span className={styles.campusPreviewAuthor}>{post.authorName}</span>
-                          <span className={styles.campusPreviewText}>{post.content?.slice(0, 50)}...</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className={styles.campusCardCta}>
-                  Join the conversation <span className={styles.campusArrow}>→</span>
-                </div>
-              </div>
-            </Link>
-          </ScrollReveal>
-
-          {/* Clubs Card */}
-          <ScrollReveal delay={100}>
-            <Link href="/clubs" className={styles.campusCard} style={{ textDecoration: 'none' }}>
-              <div className={styles.campusCardStrip} style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}></div>
-              <div className={styles.campusCardBody}>
-                <div className={styles.campusCardIcon} style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}>🏢</div>
-                <h3 className={styles.campusCardTitle}>Campus Clubs</h3>
-                <p className={styles.campusCardDesc}>
-                  Discover {clubsCount}+ student clubs — from coding marathons and robotics to drama, debate, and entrepreneurship. Find your tribe.
-                </p>
-                <div className={styles.campusCardMeta}>
-                  <div className={styles.clubChips}>
-                    <span className={styles.clubChip} style={{ borderColor: '#3b82f6', color: '#3b82f6' }}>💻 Tech</span>
-                    <span className={styles.clubChip} style={{ borderColor: '#ec4899', color: '#ec4899' }}>🎨 Arts</span>
-                    <span className={styles.clubChip} style={{ borderColor: '#22c55e', color: '#22c55e' }}>⚽ Sports</span>
-                    <span className={styles.clubChip} style={{ borderColor: '#8b5cf6', color: '#8b5cf6' }}>💼 Biz</span>
+            <Link href="/community" className={`${styles.campusCard} ${styles.campusCardHero}`}>
+              <div className={styles.campusCardShimmer}></div>
+              <div className={styles.campusCardGradient} style={{ background: 'linear-gradient(160deg, #8b5cf630 0%, #06b6d415 100%)' }}></div>
+              <div className={styles.campusCardInner}>
+                <div className={styles.campusCardTop}>
+                  <div className={styles.campusCardIconLg} style={{ background: 'linear-gradient(135deg, #8b5cf6, #06b6d4)' }}>
+                    💬
+                  </div>
+                  <div className={styles.campusLiveDot}>
+                    <span className={styles.campusLivePing}></span>
+                    <span className={styles.campusLiveCore}></span>
                   </div>
                 </div>
-                <div className={styles.campusCardCta}>
-                  Browse all clubs <span className={styles.campusArrow}>→</span>
+                <h3 className={styles.campusCardName}>Community</h3>
+                <p className={styles.campusCardDesc}>
+                  Real-time discussions, peer support, and campus updates from every department — your digital quad.
+                </p>
+
+                {/* Live feed preview */}
+                {communityPosts.length > 0 && (
+                  <div className={styles.campusFeed}>
+                    {communityPosts.slice(0, 3).map((post, i) => (
+                      <div key={post.id} className={styles.campusFeedItem} style={{ animationDelay: `${i * 150}ms` }}>
+                        <div className={styles.campusFeedAvatar} style={{ background: ['#8b5cf6','#3b82f6','#ec4899'][i % 3] }}>
+                          {post.authorName?.charAt(0) || '?'}
+                        </div>
+                        <div className={styles.campusFeedBody}>
+                          <span className={styles.campusFeedAuthor}>{post.authorName}</span>
+                          <span className={styles.campusFeedText}>{post.content?.slice(0, 55)}...</span>
+                        </div>
+                        <div className={styles.campusFeedMeta}>
+                          ❤️ {post.likes?.length || 0}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className={styles.campusCardAction}>
+                  <span>Join the conversation</span>
+                  <span className={styles.campusArrowIcon}>→</span>
                 </div>
               </div>
             </Link>
           </ScrollReveal>
 
-          {/* News Card */}
-          <ScrollReveal delay={200}>
-            <Link href="/news" className={styles.campusCard} style={{ textDecoration: 'none' }}>
-              <div className={styles.campusCardStrip} style={{ background: 'linear-gradient(135deg, #ef4444, #f97316)' }}></div>
-              <div className={styles.campusCardBody}>
-                <div className={styles.campusCardIcon} style={{ background: 'linear-gradient(135deg, #ef4444, #f97316)' }}>📰</div>
-                <h3 className={styles.campusCardTitle}>College News</h3>
-                <p className={styles.campusCardDesc}>
-                  Official campus announcements, event updates, and urgent notices — never miss what matters on campus.
-                </p>
-                <div className={styles.campusCardMeta}>
+          {/* Right column */}
+          <div className={styles.campusRight}>
+            {/* ── CLUBS ── */}
+            <ScrollReveal delay={120}>
+              <Link href="/clubs" className={`${styles.campusCard} ${styles.campusCardClubs}`}>
+                <div className={styles.campusCardShimmer}></div>
+                <div className={styles.campusCardGradient} style={{ background: 'linear-gradient(160deg, #f59e0b20 0%, #ef444415 100%)' }}></div>
+                <div className={styles.campusCardInner}>
+                  <div className={styles.campusCardTop}>
+                    <div className={styles.campusCardIconLg} style={{ background: 'linear-gradient(135deg, #f59e0b, #ef4444)' }}>
+                      🏢
+                    </div>
+                    <div className={styles.campusCountBadge}>
+                      <span className={styles.campusCountNum}>{clubsCount}+</span>
+                      <span className={styles.campusCountLabel}>clubs</span>
+                    </div>
+                  </div>
+                  <h3 className={styles.campusCardName}>Campus Clubs</h3>
+                  <p className={styles.campusCardDesc}>Coding marathons, robotics, drama, debate — find your tribe.</p>
+
+                  <div className={styles.campusTagsRow}>
+                    {[
+                      { label: '💻 Tech', color: '#3b82f6' },
+                      { label: '🎨 Arts', color: '#ec4899' },
+                      { label: '⚽ Sports', color: '#22c55e' },
+                      { label: '💼 Business', color: '#f59e0b' },
+                      { label: '🔬 Science', color: '#8b5cf6' },
+                    ].map(tag => (
+                      <span key={tag.label} className={styles.campusTag} style={{ color: tag.color, borderColor: `${tag.color}40`, background: `${tag.color}10` }}>
+                        {tag.label}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className={styles.campusCardAction}>
+                    <span>Browse all clubs</span>
+                    <span className={styles.campusArrowIcon}>→</span>
+                  </div>
+                </div>
+              </Link>
+            </ScrollReveal>
+
+            {/* ── NEWS ── */}
+            <ScrollReveal delay={220}>
+              <Link href="/news" className={`${styles.campusCard} ${styles.campusCardNews}`}>
+                <div className={styles.campusCardShimmer}></div>
+                <div className={styles.campusCardGradient} style={{ background: 'linear-gradient(160deg, #ef444420 0%, #f9731615 100%)' }}></div>
+                <div className={styles.campusCardInner}>
+                  <div className={styles.campusCardTop}>
+                    <div className={styles.campusCardIconLg} style={{ background: 'linear-gradient(135deg, #ef4444, #f97316)' }}>
+                      📰
+                    </div>
+                    <div className={styles.campusLiveDot}>
+                      <span className={styles.campusLivePing} style={{ background: '#ef4444' }}></span>
+                      <span className={styles.campusLiveCore} style={{ background: '#ef4444' }}></span>
+                    </div>
+                  </div>
+                  <h3 className={styles.campusCardName}>College News</h3>
+                  <p className={styles.campusCardDesc}>Never miss an announcement or event.</p>
+
                   {latestNews.length > 0 && (
-                    <div className={styles.campusPreviewList}>
-                      {latestNews.slice(0, 2).map(item => (
-                        <div key={item.id} className={styles.newsPreviewItem}>
-                          <span className={styles.newsPreviewDot} style={{ background: getNewsTypeColor(item.type) }}></span>
-                          <span className={styles.newsPreviewTitle}>{item.title}</span>
-                          <span className={styles.newsPreviewTime}>{formatNewsDate(item.timestamp)}</span>
+                    <div className={styles.campusNewsList}>
+                      {latestNews.slice(0, 3).map((item, i) => (
+                        <div key={item.id} className={styles.campusNewsRow}>
+                          <span className={styles.campusNewsType} style={{ background: getNewsTypeColor(item.type) }}>
+                            {getNewsTypeEmoji(item.type)}
+                          </span>
+                          <span className={styles.campusNewsText}>{item.title}</span>
+                          <span className={styles.campusNewsTime}>{formatNewsDate(item.timestamp)}</span>
                         </div>
                       ))}
                     </div>
                   )}
+
+                  <div className={styles.campusCardAction}>
+                    <span>View bulletin</span>
+                    <span className={styles.campusArrowIcon}>→</span>
+                  </div>
                 </div>
-                <div className={styles.campusCardCta}>
-                  View bulletin <span className={styles.campusArrow}>→</span>
-                </div>
-              </div>
-            </Link>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Why Choose Sutras? */}
-      <section className={styles.section}>
-        <ScrollReveal>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>✨ Why Choose Sutras?</h2>
+              </Link>
+            </ScrollReveal>
           </div>
-        </ScrollReveal>
-        <div className={styles.featuresGrid}>
-          <ScrollReveal delay={0}>
-            <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>🚀</div>
-              <h3 className={styles.featureTitle}>Instant Access anywhere</h3>
-              <p className={styles.featureDesc}>Get high-quality PDF notes and solutions on your phone, tablet or laptop instantly. No paywalls, no waiting.</p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={100}>
-            <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>🤝</div>
-              <h3 className={styles.featureTitle}>Community Driven</h3>
-              <p className={styles.featureDesc}>Contribute to the platform by uploading your own notes. Earn points, climb the leaderboard, and help your juniors succeed.</p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={200}>
-            <div className={styles.featureCard}>
-              <div className={styles.featureIcon}>⚡</div>
-              <h3 className={styles.featureTitle}>Last Night Exam Mode</h3>
-              <p className={styles.featureDesc}>Stressed about tomorrow's exam? Use our exclusive AI-powered Exam Mode to study unit-wise summaries and the most frequently asked questions.</p>
-            </div>
-          </ScrollReveal>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className={styles.section} style={{ borderRadius: 'var(--radius-xl)', padding: '40px' }}>
-        <ScrollReveal>
-          <div className={styles.sectionHeader} style={{ textAlign: 'center', display: 'block', marginBottom: '40px' }}>
-            <h2 className={styles.sectionTitle}>⚙️ How It Works</h2>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>Join the system in 3 easy steps</p>
-          </div>
-        </ScrollReveal>
-        <div className={styles.featuresGrid}>
-          <ScrollReveal delay={0}>
-            <div className={styles.featureCard} style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-              <div className={styles.statNumber} style={{ color: 'var(--primary-light)' }}>1</div>
-              <h3 className={styles.featureTitle}>Create Profile</h3>
-              <p className={styles.featureDesc}>Sign up and select your major, college, and current semester.</p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={100}>
-            <div className={styles.featureCard} style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-              <div className={styles.statNumber} style={{ color: 'var(--secondary)' }}>2</div>
-              <h3 className={styles.featureTitle}>Download Materials</h3>
-              <p className={styles.featureDesc}>Get instant, free access to notes curated exactly for your subjects.</p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={200}>
-            <div className={styles.featureCard} style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
-             <div className={styles.statNumber} style={{ color: 'var(--accent)' }}>3</div>
-              <h3 className={styles.featureTitle}>Upload & Rank Up</h3>
-              <p className={styles.featureDesc}>Share your own files. Earn rep points and become a Top Contributor.</p>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Personalized / Recent Uploads */}
-      <section className={styles.section}>
+      {/* ══════════════════════════════════════════════════ */}
+      {/* ═══ RECENT UPLOADS / RECOMMENDED ════════════════ */}
+      {/* ══════════════════════════════════════════════════ */}
+      <section className={styles.uploadsSection}>
         <ScrollReveal>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>{sectionLabel}</h2>
             <Link href="/notes" className={styles.sectionLink}>View all →</Link>
           </div>
         </ScrollReveal>
-        <div className={styles.recentGrid}>
+        <div className={styles.uploadsGrid}>
           {loadingFiles ? (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 0', color: 'var(--text-secondary)' }}>
-              Loading recent uploads...
-            </div>
+            <>
+              {[1,2,3].map(i => (
+                <Skeleton key={i} variant="card" />
+              ))}
+            </>
           ) : displayFiles.length === 0 ? (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 0', color: 'var(--text-secondary)' }}>
+            <div className={styles.emptyGrid}>
               No approved uploads yet. <Link href="/upload" style={{ color: 'var(--primary)', fontWeight: 600 }}>Be the first to upload!</Link>
             </div>
           ) : (
             displayFiles.map((note, i) => (
-              <ScrollReveal key={note.id} delay={i * 100}>
-                <div className={`${styles.noteCard} hover-lift`}>
-                  <div className={styles.noteCardBody}>
-                    <span className={`${styles.noteCardType} ${getTypeClass(note.type)}`}>
+              <ScrollReveal key={note.id} delay={i * 80}>
+                <div className={styles.uploadCard}>
+                  <div className={styles.uploadCardAccent} style={{
+                    background: note.type === 'Notes' ? 'var(--primary)' : note.type === 'PYQ' ? 'var(--secondary)' : 'var(--accent)'
+                  }}></div>
+                  <div className={styles.uploadCardBody}>
+                    <span className={`${styles.uploadType} ${getTypeClass(note.type)}`}>
                       {note.type}
                     </span>
-                    <h3 className={styles.noteCardTitle}>{note.title}</h3>
-                    <div className={styles.noteCardMeta}>
+                    <h3 className={styles.uploadTitle}>{note.title}</h3>
+                    <div className={styles.uploadMeta}>
                       <span><IconUser /> {note.uploader}</span>
                       <span><IconFolder /> {note.subject}</span>
                       <span><IconHat /> {note.year}</span>
                     </div>
-                    <div style={{ flexGrow: 1 }}></div>
-                    <div className={styles.noteCardFooter}>
-                      <div className={styles.noteCardRating}>
+                    <div className={styles.uploadFooter}>
+                      <div className={styles.uploadRating}>
                         <IconStar /> {note.rating > 0 ? note.rating : 'New'}
                       </div>
                       <button className={styles.downloadBtn} onClick={() => handleDownload(note)}>
-                        <IconDownload size={18} /> Download
+                        <IconDownload size={16} /> Download
                       </button>
                     </div>
                   </div>
@@ -484,91 +530,125 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ LIVE NEWS TICKER — NEW ═══ */}
-      {latestNews.length > 0 && (
-        <section className={styles.newsTicker}>
-          <ScrollReveal>
-            <div className={styles.newsTickerInner}>
-              <div className={styles.newsTickerLabel}>
-                <span className={styles.newsTickerDot}></span>
-                LIVE UPDATES
+      {/* ══════════════════════════════════════════════════ */}
+      {/* ═══ WHY SUTRAS + HOW IT WORKS (SPLIT) ══════════ */}
+      {/* ══════════════════════════════════════════════════ */}
+      <section className={styles.whySection}>
+        <ScrollReveal>
+          <div className={styles.sectionHeader} style={{ justifyContent: 'center', textAlign: 'center', display: 'block' }}>
+            <h2 className={styles.sectionTitle}>✨ Why Students Love Sutras</h2>
+          </div>
+        </ScrollReveal>
+        <div className={styles.whyGrid}>
+          {[
+            { emoji: '🚀', title: 'Instant Access', desc: 'Premium notes and solutions on any device. No paywalls, no waiting — ever.' },
+            { emoji: '🤝', title: 'Community Driven', desc: 'Upload notes, earn points, climb the leaderboard, and help juniors succeed.' },
+            { emoji: '⚡', title: 'Exam Mode', desc: 'AI-powered last-night prep with unit summaries and most-asked questions.' }
+          ].map((f, i) => (
+            <ScrollReveal key={f.title} delay={i * 100}>
+              <div className={styles.whyCard}>
+                <div className={styles.whyEmoji}>{f.emoji}</div>
+                <h3 className={styles.whyCardTitle}>{f.title}</h3>
+                <p className={styles.whyCardDesc}>{f.desc}</p>
               </div>
-              <div className={styles.newsTickerTrack}>
-                <div className={styles.newsTickerContent}>
-                  {[...latestNews, ...latestNews].map((item, i) => (
-                    <Link href="/news" key={`${item.id}-${i}`} className={styles.newsTickerItem}>
-                      <span style={{ color: getNewsTypeColor(item.type) }}>{getNewsTypeEmoji(item.type)}</span>
-                      <span>{item.title}</span>
-                    </Link>
-                  ))}
+            </ScrollReveal>
+          ))}
+        </div>
+
+        {/* How it works — inline process */}
+        <ScrollReveal delay={100}>
+          <div className={styles.processBar}>
+            {[
+              { step: '1', title: 'Create Profile', desc: 'Sign up and select your major' },
+              { step: '2', title: 'Download Materials', desc: 'Instant free access to notes' },
+              { step: '3', title: 'Upload & Rank Up', desc: 'Earn rep points & badges' },
+            ].map((s, i) => (
+              <div key={s.step} className={styles.processStep}>
+                <div className={styles.processNum}>{s.step}</div>
+                <div className={styles.processInfo}>
+                  <div className={styles.processTitle}>{s.title}</div>
+                  <div className={styles.processDesc}>{s.desc}</div>
+                </div>
+                {i < 2 && <div className={styles.processConnector}></div>}
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
+      </section>
+
+      {/* ══════════════════════════════════════════════════ */}
+      {/* ═══ LEADERBOARD + STATS COMBINED ════════════════ */}
+      {/* ══════════════════════════════════════════════════ */}
+      <section className={styles.socialProofSection}>
+        <div className={styles.socialProofGrid}>
+          {/* Leaderboard */}
+          <ScrollReveal delay={0}>
+            <div className={styles.leaderboardCard}>
+              <div className={styles.leaderboardHeader}>
+                <h3>🏆 Top Contributors</h3>
+                <span>Monthly</span>
+              </div>
+              <div className={styles.leaderboardList}>
+                {topContributors.length === 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '8px 0' }}>
+                    {[1,2,3,4].map(i => <Skeleton key={i} variant="avatar-row" size={44} />)}
+                  </div>
+                ) : (
+                  topContributors.map((c, i) => (
+                    <div key={c.id} className={styles.leaderboardRow}>
+                      <span className={styles.leaderboardRank}>{rankEmojis[i] || `#${i+1}`}</span>
+                      <div className={styles.leaderboardAvatar}>
+                        {c.photoURL ? <img src={c.photoURL} alt="" /> : getInitials(c.name)}
+                      </div>
+                      <div className={styles.leaderboardInfo}>
+                        <span className={styles.leaderboardName}>{c.name}</span>
+                        <span className={styles.leaderboardPts}>⭐ {c.points || 0} pts</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Stats Grid */}
+          <ScrollReveal delay={100}>
+            <div className={styles.statsCard}>
+              <h3 className={styles.statsCardTitle}>📊 Platform at a Glance</h3>
+              <div className={styles.statsInnerGrid}>
+                <div className={styles.statCell}>
+                  <div className={styles.statCellIcon} style={{ background: '#3b82f618', color: '#3b82f6' }}>📄</div>
+                  <div className={styles.statCellNum}><CountUp end={platformStats.notes} suffix="+" /></div>
+                  <div className={styles.statCellLabel}>Notes</div>
+                </div>
+                <div className={styles.statCell}>
+                  <div className={styles.statCellIcon} style={{ background: '#22d3ee18', color: '#22d3ee' }}>👥</div>
+                  <div className={styles.statCellNum}><CountUp end={platformStats.students} suffix="+" /></div>
+                  <div className={styles.statCellLabel}>Students</div>
+                </div>
+                <div className={styles.statCell}>
+                  <div className={styles.statCellIcon} style={{ background: '#f472b618', color: '#f472b6' }}>📝</div>
+                  <div className={styles.statCellNum}><CountUp end={platformStats.pyqs} suffix="+" /></div>
+                  <div className={styles.statCellLabel}>PYQs</div>
+                </div>
+                <div className={styles.statCell}>
+                  <div className={styles.statCellIcon} style={{ background: '#f59e0b18', color: '#f59e0b' }}>📚</div>
+                  <div className={styles.statCellNum}><CountUp end={platformStats.subjects} suffix="+" /></div>
+                  <div className={styles.statCellLabel}>Subjects</div>
                 </div>
               </div>
             </div>
           </ScrollReveal>
-        </section>
-      )}
-
-      {/* Top Contributors */}
-      <section className={styles.section}>
-        <ScrollReveal>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>🏆 Top Contributors</h2>
-            <div className={styles.sectionLink}>Monthly Leaderboard</div>
-          </div>
-        </ScrollReveal>
-        <div className={styles.contributorsGrid}>
-          {topContributors.length === 0 ? (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
-                Building leaderboard...
-            </div>
-          ) : (
-            topContributors.map((contributor, index) => (
-              <ScrollReveal key={contributor.id} delay={index * 100}>
-                <div className={styles.contributorCard}>
-                  <div className={styles.contributorRank}>#{index + 1}</div>
-                  <div className={styles.contributorAvatar}>
-                      {contributor.photoURL ? <img src={contributor.photoURL} alt="" /> : getInitials(contributor.name)}
-                  </div>
-                  <div className={styles.contributorInfo}>
-                    <div className={styles.contributorName}>{contributor.name}</div>
-                    <div className={styles.contributorPoints}>⭐ {contributor.points || 0} Points</div>
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))
-          )}
         </div>
       </section>
 
-      {/* Stats */}
-      <section className={styles.stats}>
+      {/* ══════════════════════════════════════════════════ */}
+      {/* ═══ CTA BANNER ═════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════ */}
+      <section className={styles.ctaSection}>
         <ScrollReveal>
-          <div className={styles.statsGrid}>
-            <div className={styles.statItem}>
-              <div className={styles.statNumber}><CountUp end={platformStats.notes} suffix="+" /></div>
-              <div className={styles.statLabel}>Notes Uploaded</div>
-            </div>
-            <div className={styles.statItem}>
-              <div className={styles.statNumber}><CountUp end={platformStats.students} suffix="+" /></div>
-              <div className={styles.statLabel}>Students Active</div>
-            </div>
-            <div className={styles.statItem}>
-              <div className={styles.statNumber}><CountUp end={platformStats.pyqs} suffix="+" /></div>
-              <div className={styles.statLabel}>PYQs Available</div>
-            </div>
-            <div className={styles.statItem}>
-              <div className={styles.statNumber}><CountUp end={platformStats.subjects} suffix="+" /></div>
-              <div className={styles.statLabel}>Subjects Covered</div>
-            </div>
-          </div>
-        </ScrollReveal>
-      </section>
-
-      {/* ═══ CTA BANNER — NEW ═══ */}
-      <section className={styles.ctaBanner}>
-        <ScrollReveal>
-          <div className={styles.ctaInner}>
-            <div className={styles.ctaGlow}></div>
+          <div className={styles.ctaCard}>
+            <div className={styles.ctaOrb}></div>
             <div className={styles.ctaContent}>
               <h2 className={styles.ctaTitle}>Ready to level up your college experience?</h2>
               <p className={styles.ctaDesc}>
@@ -593,25 +673,42 @@ export default function HomePage() {
         </ScrollReveal>
       </section>
 
-      {/* Footer */}
+      {/* ══════════════════════════════════════════════════ */}
+      {/* ═══ FOOTER ═════════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════ */}
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
-          <div className={styles.footerLogo}>📚 Sutras</div>
-          <div className={styles.footerLinks}>
-            <Link href="/notes" className={styles.footerLink}>Notes</Link>
-            <Link href="/pyqs" className={styles.footerLink}>PYQs</Link>
-            <Link href="/assignments" className={styles.footerLink}>Assignments</Link>
-            <Link href="/community" className={styles.footerLink}>Community</Link>
-            <Link href="/clubs" className={styles.footerLink}>Clubs</Link>
-            <Link href="/news" className={styles.footerLink}>News</Link>
-            <Link href="/upload" className={styles.footerLink}>Upload</Link>
+          <div className={styles.footerTop}>
+            <div className={styles.footerBrand}>
+              <span className={styles.footerLogo}>📚 Sutras</span>
+              <p className={styles.footerTagline}>The Student OS — Built for Campus Life</p>
+            </div>
+            <div className={styles.footerColumns}>
+              <div className={styles.footerCol}>
+                <h4>Resources</h4>
+                <Link href="/notes">Notes</Link>
+                <Link href="/pyqs">PYQs</Link>
+                <Link href="/assignments">Assignments</Link>
+                <Link href="/upload">Upload</Link>
+              </div>
+              <div className={styles.footerCol}>
+                <h4>Campus</h4>
+                <Link href="/community">Community</Link>
+                <Link href="/clubs">Clubs</Link>
+                <Link href="/news">News</Link>
+                <Link href="/exam-mode">Exam Mode</Link>
+              </div>
+              <div className={styles.footerCol}>
+                <h4>Legal</h4>
+                <Link href="/privacy-policy">Privacy Policy</Link>
+                <Link href="/terms-of-service">Terms of Service</Link>
+                <Link href="/cookie-policy">Cookie Policy</Link>
+              </div>
+            </div>
           </div>
-          <div className={styles.footerLinks}>
-            <Link href="/privacy-policy" className={styles.footerLink}>Privacy Policy</Link>
-            <Link href="/terms-of-service" className={styles.footerLink}>Terms of Service</Link>
-            <Link href="/cookie-policy" className={styles.footerLink}>Cookie Policy</Link>
+          <div className={styles.footerBottom}>
+            <span>© 2026 Sutras. All rights reserved.</span>
           </div>
-          <div className={styles.footerLink}>© 2026 Sutras. All rights reserved.</div>
         </div>
       </footer>
     </>

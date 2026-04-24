@@ -55,6 +55,8 @@ export default function DashboardPage() {
     const [editSemester, setEditSemester] = useState('');
     const [editBio, setEditBio] = useState('');
     const [editTheme, setEditTheme] = useState('purple');
+    const [editStudentPhone, setEditStudentPhone] = useState('');
+    const [editParentPhone, setEditParentPhone] = useState('');
     const [saving, setSaving] = useState(false);
 
     // Avatar Upload State
@@ -90,6 +92,10 @@ export default function DashboardPage() {
 
     // Deadlines Tracking State
     const [deadlines, setDeadlines] = useState([]);
+    const [mySubmissions, setMySubmissions] = useState([]);
+    const [submittingAssignment, setSubmittingAssignment] = useState(null);
+    const [submissionFile, setSubmissionFile] = useState(null);
+    const [submissionProgress, setSubmissionProgress] = useState(0);
     const [now, setNow] = useState(new Date());
 
     useEffect(() => {
@@ -202,6 +208,12 @@ export default function DashboardPage() {
                 const lrList = lrSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                 lrList.sort((x, y) => new Date(y.timestamp) - new Date(x.timestamp));
                 if (!cancelled) setMyLeaveRequests(lrList);
+
+                // 1.6 Fetch My Submissions
+                const subQuery = query(collection(db, 'submissions'), where('studentEmail', '==', user.email));
+                const subSnap = await getDocs(subQuery);
+                const subList = subSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (!cancelled) setMySubmissions(subList);
 
                 // 2. Fetch Announcements
                 const annQuery = query(collection(db, 'announcements'), where('classId', '==', user.classId));
@@ -484,6 +496,8 @@ export default function DashboardPage() {
         setEditSemester(user.semester || '');
         setEditBio(user.bio || '');
         setEditTheme(user.themeAccent || 'purple');
+        setEditStudentPhone(user.studentPhone || '');
+        setEditParentPhone(user.parentPhone || '');
         setAvatarPreview(null);
         setAvatarFile(null);
         setEditing(true);
@@ -573,6 +587,7 @@ export default function DashboardPage() {
                 college: editCollege, branch: editBranch, year: editYear,
                 semester: editSemester, subjects: subjects,
                 bio: editBio, themeAccent: editTheme,
+                studentPhone: editStudentPhone, parentPhone: editParentPhone,
                 profileComplete: true,
             };
 
@@ -615,6 +630,54 @@ export default function DashboardPage() {
             console.error("Leave request error", err);
         }
         setLeaveSubmitting(false);
+    };
+
+    const handleAssignmentSubmit = async (e, deadline) => {
+        e.preventDefault();
+        if (!submissionFile) return;
+        setSubmittingAssignment(deadline.id);
+        
+        try {
+            const ext = submissionFile.name.split('.').pop();
+            const filename = `submissions/${deadline.id}/${user.uid}_${Date.now()}.${ext}`;
+            const storageRef = ref(storage, filename);
+            const uploadTask = uploadBytesResumable(storageRef, submissionFile);
+            
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    const prog = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                    setSubmissionProgress(prog);
+                }, 
+                (err) => {
+                    console.error('Submission upload error', err);
+                    setSubmittingAssignment(null);
+                    setSubmissionFile(null);
+                }, 
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    
+                    const newSub = {
+                        deadlineId: deadline.id,
+                        studentEmail: user.email,
+                        studentName: user.name || 'Anonymous',
+                        studentPhone: user.studentPhone || '',
+                        parentPhone: user.parentPhone || '',
+                        fileUrl: downloadURL,
+                        submittedAt: new Date().toISOString()
+                    };
+                    
+                    const docRef = await addDoc(collection(db, 'submissions'), newSub);
+                    setMySubmissions(prev => [...prev, { id: docRef.id, ...newSub }]);
+                    
+                    setSubmittingAssignment(null);
+                    setSubmissionFile(null);
+                    setSubmissionProgress(0);
+                }
+            );
+        } catch(e) {
+            console.error(e);
+            setSubmittingAssignment(null);
+        }
     };
 
     if (!user) {
@@ -806,6 +869,32 @@ export default function DashboardPage() {
                                                         <div style={{fontSize:'0.8rem', color:'var(--text-secondary)', marginTop:'12px', borderTop: '1px solid var(--border)', paddingTop: '8px'}}>
                                                             Due limit: {new Date(d.dueDate).toLocaleString()}
                                                         </div>
+                                                        {d.maxMarks && (
+                                                            <div style={{marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)'}}>
+                                                                <h5 style={{margin: '0 0 8px 0'}}>Assignment (Max {d.maxMarks})</h5>
+                                                                {(() => {
+                                                                    const mySub = mySubmissions.find(s => s.deadlineId === d.id);
+                                                                    if (mySub) {
+                                                                        if (mySub.marks !== undefined) {
+                                                                            return <div style={{color: 'var(--success)', fontWeight:'bold'}}>✨ Graded: {mySub.marks} / {d.maxMarks}</div>;
+                                                                        }
+                                                                        return <div style={{color: 'var(--primary)', fontSize:'0.9rem'}}>✅ Submitted. Pending grading.</div>;
+                                                                    }
+                                                                    if (diff < 0) {
+                                                                        return <div style={{color: 'var(--error)'}}>Deadline Missed</div>;
+                                                                    }
+                                                                    if (submittingAssignment === d.id) {
+                                                                        return <div style={{fontSize:'0.85rem'}}>Uploading: {submissionProgress}%</div>;
+                                                                    }
+                                                                    return (
+                                                                        <form onSubmit={(e) => handleAssignmentSubmit(e, d)} style={{display: 'flex', flexDirection:'column', gap: '8px'}}>
+                                                                            <input type="file" onChange={(e) => setSubmissionFile(e.target.files[0])} accept=".pdf,.doc,.docx,.zip,.png,.jpg" style={{fontSize: '0.8rem'}} required />
+                                                                            <button type="submit" className={styles.saveBtn} style={{padding: '4px 8px', fontSize: '0.8rem', width: 'fit-content'}}>Submit File</button>
+                                                                        </form>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 );
                                             })}
@@ -985,6 +1074,14 @@ export default function DashboardPage() {
                                     <div className={styles.editField} style={{ gridColumn: '1 / -1' }}>
                                         <label>Short Bio</label>
                                         <input type="text" maxLength={60} value={editBio} onChange={(e) => setEditBio(e.target.value)} placeholder="e.g. Code wizard & coffee consumer" />
+                                    </div>
+                                    <div className={styles.editField}>
+                                        <label>Student Phone</label>
+                                        <input type="tel" value={editStudentPhone} onChange={(e) => setEditStudentPhone(e.target.value)} placeholder="+1234567890" />
+                                    </div>
+                                    <div className={styles.editField}>
+                                        <label>Parent Phone</label>
+                                        <input type="tel" value={editParentPhone} onChange={(e) => setEditParentPhone(e.target.value)} placeholder="+1987654321" />
                                     </div>
                                     <div className={styles.editField}>
                                         <label>ID Card Theme</label>

@@ -5,7 +5,7 @@ const path = require('path');
 async function packStandaloneCPanel() {
   const rootDir = __dirname;
   const standaloneDir = path.join(rootDir, '.next', 'standalone');
-  const deployZipPath = path.join(rootDir, '..', 'cpanel-deploy.zip');
+  const deployZipPath = path.join(rootDir, 'cpanel-deploy.zip');
 
   if (!fs.existsSync(standaloneDir)) {
     console.error("Standalone directory doesn't exist. Did you run 'npm run build' with output: 'standalone'?");
@@ -56,6 +56,8 @@ async function packStandaloneCPanel() {
   const rootServerJs = `
 // This is the root file for cPanel Cloudlinux
 // It forwards the execution to the Next.js standalone application inside the next-app folder
+const path = require('path');
+process.chdir(path.join(__dirname, 'next-app'));
 require('./next-app/server.js');
 `;
   archive.append(rootServerJs, { name: 'server.js' });

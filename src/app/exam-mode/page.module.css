@@ -260,8 +260,16 @@
 }
 
 @media (max-width: 768px) {
+    .pageWrapper {
+        padding: calc(var(--navbar-height) + var(--space-xl)) var(--space-md) 100px;
+    }
+
     .examTitle {
         font-size: 2.5rem;
+    }
+
+    .summaryGrid {
+        grid-template-columns: 1fr;
     }
 
     .questionCard {
@@ -274,5 +282,102 @@
     .questionNum {
         text-align: left;
         font-size: 2rem;
+    }
+
+    .subjectChip {
+        padding: 10px 20px;
+        font-size: 0.88rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pageWrapper {
+        padding: calc(var(--navbar-height) + var(--space-lg)) var(--space-sm) 100px;
+    }
+
+    .examIcon {
+        font-size: 2.2rem;
+    }
+
+    .examTitle {
+        font-size: 1.8rem;
+    }
+
+    .examDesc {
+        font-size: 0.95rem;
+    }
+
+    .subjectSelector {
+        gap: var(--space-sm);
+        margin-bottom: var(--space-2xl);
+    }
+
+    .subjectChip {
+        padding: 8px 16px;
+        font-size: 0.82rem;
+    }
+
+    .tipCard {
+        padding: var(--space-lg);
+    }
+
+    .tipTitle {
+        font-size: 1rem;
+    }
+
+    .tipText {
+        font-size: 0.88rem;
+    }
+
+    .sectionTitle {
+        font-size: 1.4rem;
+    }
+
+    .summaryCard {
+        padding: var(--space-lg);
+    }
+
+    .summaryTitle {
+        font-size: 1.15rem;
+    }
+
+    .summaryPoint {
+        font-size: 0.88rem;
+        padding-left: 20px;
+    }
+
+    .questionCard {
+        padding: var(--space-md);
+    }
+
+    .questionNum {
+        font-size: 1.6rem;
+    }
+
+    .questionText {
+        font-size: 1rem;
+    }
+
+    .questionMarks {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .examTitle {
+        font-size: 1.5rem;
+    }
+
+    .subjectChip {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
+    .summaryTitle {
+        font-size: 1rem;
+    }
+
+    .questionNum {
+        font-size: 1.3rem;
     }
 }

@@ -28,6 +28,12 @@ export default function TeacherDashboard() {
     const [deadlineTitle, setDeadlineTitle] = useState('');
     const [deadlineDesc, setDeadlineDesc] = useState('');
     const [deadlineDate, setDeadlineDate] = useState('');
+    const [deadlineMaxMarks, setDeadlineMaxMarks] = useState('');
+
+    // Grading State
+    const [gradingDeadline, setGradingDeadline] = useState(null);
+    const [submissions, setSubmissions] = useState([]);
+    const [gradingMarks, setGradingMarks] = useState({});
 
     // Attendance state
     const [students, setStudents] = useState([]);
@@ -267,6 +273,7 @@ export default function TeacherDashboard() {
                 title: deadlineTitle,
                 description: deadlineDesc,
                 dueDate: deadlineDate, // Standard ISO format bound securely to the frontend clock
+                maxMarks: deadlineMaxMarks ? Number(deadlineMaxMarks) : null,
                 teacherId: user.uid,
                 createdAt: new Date().toISOString()
             });
@@ -274,8 +281,63 @@ export default function TeacherDashboard() {
             setDeadlineTitle('');
             setDeadlineDesc('');
             setDeadlineDate('');
+            setDeadlineMaxMarks('');
         } catch (e) {
             setStatus({ text: 'Error publishing deadline.', type: 'error' });
+        }
+        setIsSaving(false);
+    };
+
+    const loadSubmissions = async (deadline) => {
+        setGradingDeadline(deadline);
+        setSubmissions([]);
+        setGradingMarks({});
+        try {
+            const q = query(collection(db, 'submissions'), where('deadlineId', '==', deadline.id));
+            const snap = await getDocs(q);
+            const subs = [];
+            snap.forEach(d => subs.push({ id: d.id, ...d.data() }));
+            setSubmissions(subs);
+        } catch(e) {
+            console.error('Error fetching submissions', e);
+        }
+    };
+
+    const submitGrade = async (sub) => {
+        const marks = gradingMarks[sub.id];
+        if (marks === undefined || marks === '') return;
+        
+        setIsSaving(true);
+        setStatus({ text: 'Saving Grade...', type: '' });
+        try {
+            // Save to Firestore
+            await updateDoc(doc(db, 'submissions', sub.id), {
+                marks: Number(marks),
+                gradedAt: new Date().toISOString()
+            });
+
+            // Call WhatsApp API
+            const response = await fetch('/api/whatsapp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentPhone: sub.studentPhone || null, // from submission doc if available
+                    parentPhone: sub.parentPhone || null,
+                    studentName: sub.studentName,
+                    assignmentTitle: gradingDeadline.title,
+                    marks: { obtained: marks, max: gradingDeadline.maxMarks }
+                })
+            });
+
+            const resData = await response.json();
+            
+            // local state update
+            setSubmissions(prev => prev.map(s => s.id === sub.id ? { ...s, marks: marks } : s));
+            
+            setStatus({ text: resData.simulated ? 'Grade Saved & Simulated WhatsApp triggered.' : 'Grade Saved & WhatsApp sent.', type: 'success' });
+        } catch(e) {
+            setStatus({ text: 'Error grading submission', type: 'error' });
+            console.error(e);
         }
         setIsSaving(false);
     };
@@ -600,18 +662,18 @@ export default function TeacherDashboard() {
     };
 
     const getToggleBtnProps = (state) => {
-        if (state === 'present') return { className: `${styles.statusToggleBtn} ${styles.btnPresent}`, text: '✓ Present' };
-        if (state === 'absent') return { className: `${styles.statusToggleBtn} ${styles.btnAbsent}`, text: '✕ Absent' };
-        if (state === 'late') return { className: `${styles.statusToggleBtn} ${styles.btnLate}`, text: '⏱ Late' };
-        if (state === 'excused') return { className: `${styles.statusToggleBtn} ${styles.btnExcused}`, text: '⚖️ Excused' };
-        return { className: styles.statusToggleBtn, text: '---' };
+        if (state === 'present') return { className: `${styles.statusToggleBtn} ${styles.btnPresent}`, text: 'Present' };
+        if (state === 'absent') return { className: `${styles.statusToggleBtn} ${styles.btnAbsent}`, text: 'Absent' };
+        if (state === 'late') return { className: `${styles.statusToggleBtn} ${styles.btnLate}`, text: 'Late' };
+        if (state === 'excused') return { className: `${styles.statusToggleBtn} ${styles.btnExcused}`, text: 'Excused' };
+        return { className: styles.statusToggleBtn, text: '—' };
     };
 
     if (loading || !user || user.role !== 'teacher') {
         return (
             <div className={styles.container}>
                 <div className={styles.loader}>
-                    Loading Command Center...
+                    Loading workspace...
                 </div>
             </div>
         );
@@ -627,8 +689,8 @@ export default function TeacherDashboard() {
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <h1>Command Center</h1>
-                <p>Welcome, Prof. {user.name || user.email.split('@')[0]}</p>
+                <h1>Teacher Dashboard</h1>
+                <p>{user.name || user.email.split('@')[0]}</p>
             </header>
 
             <div className={styles.dashboardGrid}>
@@ -636,8 +698,7 @@ export default function TeacherDashboard() {
                 {/* Left Panel: Class Selection */}
                 <div className={styles.leftPanel}>
                     <h2 className={styles.panelTitle}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                        Your Classes
+                        Classes
                     </h2>
                     {user.assignments && user.assignments.length > 0 ? (
                         <div className={styles.assignmentList}>
@@ -666,22 +727,22 @@ export default function TeacherDashboard() {
                     {!selectedAssignment ? (
                         <div className={styles.placeholderState}>
                             <div className={styles.placeholderIcon}>
-                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
                             </div>
                             <h2>Select a class</h2>
-                            <p>Choose a class from the left menu to manage attendance, materials, and announcements.</p>
+                            <p>Select a class from the sidebar to get started.</p>
                         </div>
                     ) : (
                         <>
                             {/* Tab Navigation */}
                             <div className={styles.tabNav}>
-                                <button className={getTabClass('attendance')} onClick={() => {setActiveTab('attendance'); setStatus({text:'', type:''});}}>📋 Attendance</button>
+                                <button className={getTabClass('attendance')} onClick={() => {setActiveTab('attendance'); setStatus({text:'', type:''});}}>Attendance</button>
                                 <button className={getTabClass('leaveRequests')} onClick={() => {setActiveTab('leaveRequests'); setStatus({text:'', type:''});}}>
-                                    📨 Leave Requests {pendingLeaveRequests.length > 0 && <span className={styles.badge}>{pendingLeaveRequests.length}</span>}
+                                    Leave Requests {pendingLeaveRequests.length > 0 && <span className={styles.badge}>{pendingLeaveRequests.length}</span>}
                                 </button>
-                                <button className={getTabClass('materials')} onClick={() => {setActiveTab('materials'); setStatus({text:'', type:''});}}>📁 Materials</button>
-                                <button className={getTabClass('announcements')} onClick={() => {setActiveTab('announcements'); setStatus({text:'', type:''});}}>📢 Announcements</button>
-                                <button className={getTabClass('deadlines')} onClick={() => {setActiveTab('deadlines'); setStatus({text:'', type:''});}}>📅 Deadlines</button>
+                                <button className={getTabClass('materials')} onClick={() => {setActiveTab('materials'); setStatus({text:'', type:''});}}>Materials</button>
+                                <button className={getTabClass('announcements')} onClick={() => {setActiveTab('announcements'); setStatus({text:'', type:''});}}>Announcements</button>
+                                <button className={getTabClass('deadlines')} onClick={() => {setActiveTab('deadlines'); setStatus({text:'', type:''});}}>Deadlines</button>
                             </div>
 
                             <div className={styles.tabContent}>
@@ -691,7 +752,7 @@ export default function TeacherDashboard() {
                                     <div className={styles.attendanceTab}>
                                         <div className={styles.contentHeader}>
                                             <div className={styles.headerLeft}>
-                                                <h3>Attendance Record</h3>
+                                                <h3>Attendance</h3>
                                                 <div className={styles.datePickerWrapper}>
                                                     <input 
                                                         type="date" 
@@ -703,21 +764,21 @@ export default function TeacherDashboard() {
                                             </div>
                                             <div className={styles.batchActions}>
                                                 <button onClick={toggleLiveRadar} className={`${styles.batchBtn} ${liveSessionActive ? styles.radarActiveBtn : ''}`}>
-                                                    {radarSearching ? '🛰 Acquiring Signal...' : liveSessionActive ? '🛑 End Live Radar' : '🛰 Start Live Radar'}
+                                                    {radarSearching ? 'Connecting...' : liveSessionActive ? 'End Live Session' : 'Start Live Session'}
                                                 </button>
                                                 <button onClick={() => markAll('present')} className={styles.batchBtn}>All Present</button>
                                                 <button onClick={() => markAll('absent')} className={styles.batchBtnAlt}>All Absent</button>
-                                                <button onClick={downloadDailyCSV} className={styles.exportBtn}>📥 Download CSV</button>
+                                                <button onClick={downloadDailyCSV} className={styles.exportBtn}>Export CSV</button>
                                             </div>
                                         </div>
 
                                         <div className={styles.analyticsBox}>
-                                            <h3 style={{marginBottom: '12px', fontSize: '1.2rem', color: 'var(--primary)'}}>📊 Monthly Class Analytics</h3>
-                                            <p style={{fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '16px'}}>Generate and publish official attendance aggregates natively to student dashboards.</p>
-                                            <div style={{display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap'}}>
-                                                <input type="month" value={reportMonth} onChange={(e) => setReportMonth(e.target.value)} className={styles.datePicker} style={{background: 'var(--bg-main)', flex: 1, minWidth: '150px'}} />
-                                                <button className={styles.exportBtn} onClick={downloadMonthlyCSV} disabled={generatingReport}>📥 Export CSV</button>
-                                                <button className={styles.publishBtn} onClick={publishMonthlyReport} disabled={generatingReport}>📢 Publish Official Report</button>
+                                            <h3 style={{marginBottom: '6px', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)'}}>Monthly Analytics</h3>
+                                            <p style={{fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '14px'}}>Generate attendance summaries and publish reports to student dashboards.</p>
+                                            <div style={{display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap'}}>
+                                                <input type="month" value={reportMonth} onChange={(e) => setReportMonth(e.target.value)} className={styles.datePicker} style={{flex: 1, minWidth: '150px'}} />
+                                                <button className={styles.exportBtn} onClick={downloadMonthlyCSV} disabled={generatingReport}>Export CSV</button>
+                                                <button className={styles.publishBtn} onClick={publishMonthlyReport} disabled={generatingReport}>Publish Report</button>
                                             </div>
                                         </div>
 
@@ -725,17 +786,17 @@ export default function TeacherDashboard() {
                                             <div className={styles.radarZone}>
                                                 <div style={{display: 'flex', gap: '24px', flexWrap: 'wrap'}}>
                                                     <div style={{flex: 1, minWidth: '250px'}}>
-                                                        <h4>🛰 Live Geofence Monitoring (15m radius)</h4>
-                                                        <p style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>Radar is actively scanning for bio-verified sign-ins.</p>
+                                                        <h4 style={{fontSize: '0.92rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)'}}>Live Check-in Session</h4>
+                                                        <p style={{fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5}}>Geofence active within 15m radius. Students can check in via QR scan or biometric verification.</p>
                                                         <div className={styles.geoVerifiedList}>
                                                             {geoVerifiedStudents.map(student => (
                                                                 <div key={student.id} className={styles.geoVerifiedCard}>
                                                                     <div className={styles.geoSelfieWrapper}>
                                                                         {student.photoUrl ? (
-                                                                            <img src={student.photoUrl} alt="Liveness Capture" className={styles.geoSelfie} />
+                                                                            <img src={student.photoUrl} alt="Check-in" className={styles.geoSelfie} />
                                                                         ) : student.verifiedMath ? (
-                                                                            <div className={styles.geoSelfie} style={{display:'flex', alignItems:'center', justifyContent:'center', fontSize: '1.5rem', background:'var(--secondary)', color:'var(--neo)'}}>
-                                                                                ⌬
+                                                                            <div className={styles.geoSelfie} style={{display:'flex', alignItems:'center', justifyContent:'center', fontSize: '0.9rem', background:'var(--bg-card)', color:'var(--text-muted)'}}>
+                                                                                ✓
                                                                             </div>
                                                                         ) : null}
                                                                     </div>
@@ -743,29 +804,29 @@ export default function TeacherDashboard() {
                                                                         <span className={styles.geoName}>{student.studentEmail.split('@')[0]}</span>
                                                                         <span className={styles.geoDistance}>~{Math.round(student.distance)}m away</span>
                                                                     </div>
-                                                                    <span className={styles.geoCheckIcon}>{student.verifiedMath ? '🦾 ML Verified' : '✅ Verified'}</span>
+                                                                    <span className={styles.geoCheckIcon}>{student.verifiedMath ? 'Verified (Bio)' : 'Verified'}</span>
                                                                 </div>
                                                             ))}
-                                                            {geoVerifiedStudents.length === 0 && <div className={styles.geoWaiting}><div className={styles.radarPulse}></div>Waiting for student signals...</div>}
+                                                            {geoVerifiedStudents.length === 0 && <div className={styles.geoWaiting}><div className={styles.radarPulse}></div>Waiting for check-ins...</div>}
                                                         </div>
                                                     </div>
-                                                    <div style={{background: '#fff', padding: '24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}}>
-                                                        <h4 style={{color: '#000', margin: '0 0 16px 0', fontSize: '1.1rem'}}>Scan to Check-in</h4>
-                                                        {qrToken && <QRCodeCanvas value={qrToken} size={300} level="H" includeMargin={true} />}
-                                                        <p style={{color: '#666', fontSize: '0.8rem', marginTop: '12px', margin: '12px 0 0 0'}}>Dynamic Token (Refreshes every 15s)</p>
+                                                    <div style={{background: '#fff', padding: '24px', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)', minWidth: '280px'}}>
+                                                        <h4 style={{color: '#0f172a', margin: '0 0 14px 0', fontSize: '0.82rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em'}}>QR Check-in</h4>
+                                                        {qrToken && <QRCodeCanvas value={qrToken} size={220} level="H" includeMargin={true} />}
+                                                        <p style={{color: '#94a3b8', fontSize: '0.72rem', margin: '12px 0 0 0', fontWeight: 500}}>Auto-refreshes every 15 seconds</p>
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
 
                                         {fetchingData ? (
-                                            <div className={styles.loader}>Fetching roster...</div>
+                                            <div className={styles.loader}>Loading students...</div>
                                         ) : students.length > 0 ? (
                                             <div className={styles.attendanceBody}>
                                                 
                                                 <div className={styles.statsBar}>
                                                     <div className={`${styles.statGroup} ${styles.statTotal}`}>
-                                                        <span className={styles.statLabel}>Total Enrolled</span>
+                                                        <span className={styles.statLabel}>Total</span>
                                                         <span className={styles.statValue}>{students.length}</span>
                                                     </div>
                                                     <div className={`${styles.statGroup} ${styles.statPresent}`}>
@@ -816,7 +877,7 @@ export default function TeacherDashboard() {
                                                         {status.text}
                                                     </p>
                                                     <button onClick={saveAttendance} disabled={isSaving} className={styles.saveBtn}>
-                                                        {isSaving ? 'Saving...' : 'Submit Attendance'}
+                                                        {isSaving ? 'Saving...' : 'Save Attendance'}
                                                     </button>
                                                 </div>
                                             </div>
@@ -848,8 +909,8 @@ export default function TeacherDashboard() {
                                                         <div className={styles.actionCell} style={{ flexDirection: 'column', gap: '8px' }}>
                                                             {req.status === 'pending' ? (
                                                                 <>
-                                                                    <button onClick={() => handleLeaveAction(req.id, 'approved')} className={`${styles.statusToggleBtn} ${styles.btnPresent}`}>✓ Approve</button>
-                                                                    <button onClick={() => handleLeaveAction(req.id, 'rejected')} className={`${styles.statusToggleBtn} ${styles.btnAbsent}`}>✕ Reject</button>
+                                                                    <button onClick={() => handleLeaveAction(req.id, 'approved')} className={`${styles.statusToggleBtn} ${styles.btnPresent}`}>Approve</button>
+                                                                    <button onClick={() => handleLeaveAction(req.id, 'rejected')} className={`${styles.statusToggleBtn} ${styles.btnAbsent}`}>Reject</button>
                                                                 </>
                                                             ) : (
                                                                 <span className={`${styles.statusBadge} ${req.status === 'approved' ? styles.badgeApproved : styles.badgeRejected}`}>
@@ -886,16 +947,16 @@ export default function TeacherDashboard() {
                                             <div className={styles.formGroup}>
                                                 <label>Material Type</label>
                                                 <select className={styles.inputField} value={uploadType} onChange={e => setUploadType(e.target.value)}>
-                                                    <option value="Notes">📘 Notes</option>
-                                                    <option value="PYQ">📜 PYQs</option>
-                                                    <option value="Assignment">📝 Assignment</option>
+                                                    <option value="Notes">Notes</option>
+                                                    <option value="PYQ">PYQs</option>
+                                                    <option value="Assignment">Assignment</option>
                                                 </select>
                                             </div>
 
                                             <div className={styles.formGroup}>
-                                                <label>File Upload (.pdf)</label>
+                                                <label>File (.pdf)</label>
                                                 <div className={styles.fileInputWrapper}>
-                                                    <svg className={styles.fileIcon} width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                                                    <svg className={styles.fileIcon} width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
                                                     <span className={styles.fileText}>
                                                         {uploadFile ? uploadFile.name : 'Click or drag PDF here'}
                                                     </span>
@@ -931,8 +992,8 @@ export default function TeacherDashboard() {
                                 {/* TAB 3: ANNOUNCEMENTS */}
                                 {activeTab === 'announcements' && (
                                     <div className={styles.formsTab}>
-                                        <h3>Broadcast Announcement</h3>
-                                        <p className={styles.tabDesc}>Send an instant notification to all students in <strong>{selectedAssignment.classId}</strong>.</p>
+                                        <h3>Post Announcement</h3>
+                                        <p className={styles.tabDesc}>Send a notification to all students in <strong>{selectedAssignment.classId}</strong>.</p>
                                         
                                         <form onSubmit={handlePostAnnouncement} className={styles.uploadForm}>
                                             <div className={styles.formGroup}>
@@ -953,7 +1014,7 @@ export default function TeacherDashboard() {
                                                     {status.text}
                                                 </p>
                                                 <button type="submit" disabled={isSaving} className={styles.saveBtn}>
-                                                    {isSaving ? 'Sending...' : 'Broadcast'}
+                                                    {isSaving ? 'Sending...' : 'Send'}
                                                 </button>
                                             </div>
                                         </form>
@@ -962,46 +1023,102 @@ export default function TeacherDashboard() {
 
                                 {/* TAB 5: DEADLINES */}
                                 {activeTab === 'deadlines' && (
-                                    <div className={styles.materialsTab} style={{animation: 'fadeInUp 0.4s ease forwards'}}>
+                                    <div className={styles.materialsTab} style={{animation: 'fadeInUp 0.25s ease forwards'}}>
                                         <div className={styles.contentHeader}>
                                             <div className={styles.headerLeft}>
-                                                <h3>Unified Academic Calendar</h3>
-                                                <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px'}}>Publish urgency trackers directly to student dashboards.</p>
+                                                <h3>Deadlines & Assignments</h3>
+                                                <p style={{color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '2px'}}>Publish deadlines and manage assignment submissions.</p>
                                             </div>
                                         </div>
                                         
                                         <div className={styles.uploadSection}>
-                                            <h4 style={{marginBottom: '16px'}}>Publish New Deadline</h4>
+                                            <h4 style={{marginBottom: '12px', fontSize: '0.95rem', fontWeight: 600}}>New Deadline</h4>
                                             {status.text && <div className={styles[status.type]}>{status.text}</div>}
                                             
-                                            <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-                                                <input type="text" placeholder="Mission or Exam Title (e.g., Midterm Paper II)" className={styles.inputField} value={deadlineTitle} onChange={e => setDeadlineTitle(e.target.value)} />
-                                                <textarea placeholder="Critical Guidelines..." className={styles.inputField} rows={3} value={deadlineDesc} onChange={e => setDeadlineDesc(e.target.value)}></textarea>
-                                                <div style={{display: 'flex', gap: '16px', alignItems: 'center'}}>
-                                                    <label>Due Date & Time Limit:</label>
-                                                    <input type="datetime-local" className={styles.datePicker} value={deadlineDate} onChange={e => setDeadlineDate(e.target.value)} />
+                                            <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+                                                <input type="text" placeholder="Title (e.g., Midterm Paper II)" className={styles.inputField} value={deadlineTitle} onChange={e => setDeadlineTitle(e.target.value)} />
+                                                <textarea placeholder="Description or guidelines (optional)" className={styles.inputField} rows={2} value={deadlineDesc} onChange={e => setDeadlineDesc(e.target.value)}></textarea>
+                                                <div style={{display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap'}}>
+                                                    <div>
+                                                        <label style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>Due Date</label>
+                                                        <input type="datetime-local" className={styles.datePicker} value={deadlineDate} onChange={e => setDeadlineDate(e.target.value)} style={{marginLeft: '8px'}} />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>Max Marks</label>
+                                                        <input type="number" placeholder="100" className={styles.inputField} style={{width: '80px', marginLeft: '8px'}} value={deadlineMaxMarks} onChange={e => setDeadlineMaxMarks(e.target.value)} />
+                                                    </div>
                                                 </div>
                                                 <button className={styles.saveBtn} onClick={publishDeadline} disabled={isSaving || !deadlineTitle || !deadlineDate}>
-                                                    {isSaving ? 'Broadcasting...' : '📢 Broadcast Target Deadline'}
+                                                    {isSaving ? 'Publishing...' : 'Publish Deadline'}
                                                 </button>
                                             </div>
                                         </div>
                                         
-                                        <h4 style={{marginTop: '32px', marginBottom: '16px'}}>Active Urgency Trackers</h4>
+                                        <h4 style={{marginTop: '24px', marginBottom: '12px', fontSize: '0.95rem', fontWeight: 600}}>Active Deadlines</h4>
                                         <div className={styles.leaveList}>
                                             {deadlines.length > 0 ? deadlines.map(d => (
                                                 <div key={d.id} className={styles.leaveCard}>
                                                     <div className={styles.leaveInfo}>
                                                         <strong>{d.title}</strong>
                                                         <p style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>{d.description}</p>
-                                                        <span style={{color: 'var(--warning)', fontSize: '0.9rem'}}>⏳ System Lockdown at: {new Date(d.dueDate).toLocaleString()}</span>
+                                                        <span style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>Due: {new Date(d.dueDate).toLocaleString()}</span>
                                                     </div>
-                                                    <div className={styles.leaveActions}>
-                                                        <button className={styles.rejectBtn} onClick={() => deleteDeadline(d.id)}>Abort Deadline</button>
+                                                    <div className={styles.leaveActions} style={{display: 'flex', gap: '8px', flexDirection: 'column'}}>
+                                                        <button className={styles.rejectBtn} onClick={() => deleteDeadline(d.id)}>Delete</button>
+                                                        {d.maxMarks && (
+                                                            <button className={styles.saveBtn} onClick={() => loadSubmissions(d)}>
+                                                                Grade
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            )) : <p className={styles.noData}>Scanning... Sub-system shows zero incoming deadlines.</p>}
+                                            )) : <p className={styles.noData}>No deadlines published yet.</p>}
                                         </div>
+
+                                        {gradingDeadline && (
+                                            <div className={styles.uploadSection} style={{marginTop: '32px', animation: 'fadeInUp 0.3s ease'}}>
+                                                <div style={{display:'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:'16px'}}>
+                                                    <h4 style={{margin:0}}>Grading: {gradingDeadline.title}</h4>
+                                                    <button className={styles.rejectBtn} onClick={() => setGradingDeadline(null)}>Close</button>
+                                                </div>
+                                                {submissions.length === 0 ? (
+                                                    <p style={{color: 'var(--text-secondary)'}}>No submissions yet.</p>
+                                                ) : (
+                                                    <div style={{display:'flex', flexDirection:'column', gap:'12px'}}>
+                                                        {submissions.map(sub => (
+                                                            <div key={sub.id} style={{padding: '14px 16px', background: 'var(--bg-surface)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'12px', transition: 'all 0.2s ease'}}>
+                                                                <div>
+                                                                    <strong>{sub.studentName}</strong> <span style={{color: 'var(--text-muted)'}}>({sub.studentEmail})</span>
+                                                                    <div style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginTop:'4px'}}>
+                                                                        Submitted: {new Date(sub.submittedAt).toLocaleString()}
+                                                                    </div>
+                                                                    {sub.fileUrl && (
+                                                                        <a href={sub.fileUrl} target="_blank" rel="noopener noreferrer" style={{color: 'var(--primary)', fontSize: '0.8rem'}}>View submission →</a>
+                                                                    )}
+                                                                </div>
+                                                                <div style={{display:'flex', gap:'8px', alignItems:'center', padding: '8px 12px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-card)', border: '1px solid var(--border)'}}>
+                                                                    {sub.marks !== undefined ? (
+                                                                        <span style={{color: 'var(--success)', fontWeight: 700, fontSize: '0.85rem'}}>Graded: {sub.marks} / {gradingDeadline.maxMarks}</span>
+                                                                    ) : (
+                                                                        <>
+                                                                            <input 
+                                                                                type="number" 
+                                                                                placeholder={`/${gradingDeadline.maxMarks}`} 
+                                                                                className={styles.inputField} 
+                                                                                style={{width: '80px', padding: '6px', margin:0}} 
+                                                                                value={gradingMarks[sub.id] || ''} 
+                                                                                onChange={(e) => setGradingMarks({...gradingMarks, [sub.id]: e.target.value})}
+                                                                            />
+                                                                            <button className={styles.saveBtn} onClick={() => submitGrade(sub)} style={{padding: '6px 12px'}}>Save</button>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 

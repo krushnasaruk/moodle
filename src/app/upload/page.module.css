@@ -254,6 +254,10 @@
 }
 
 @media (max-width: 600px) {
+    .pageWrapper {
+        padding: calc(var(--navbar-height) + var(--space-xl)) var(--space-md) 100px;
+    }
+
     .row {
         grid-template-columns: 1fr;
         gap: var(--space-md);
@@ -265,6 +269,70 @@
 
     .pageTitle {
         font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pageWrapper {
+        padding: calc(var(--navbar-height) + var(--space-lg)) var(--space-sm) 100px;
+    }
+
+    .pageTitle {
+        font-size: 1.7rem;
+    }
+
+    .pageDesc {
+        font-size: 0.95rem;
+    }
+
+    .formCard {
+        padding: var(--space-lg);
+        border-radius: var(--radius-lg);
+    }
+
+    .input,
+    .select,
+    .textarea {
+        padding: 12px 14px;
+        font-size: 0.95rem;
+    }
+
+    .dropzone {
+        padding: var(--space-2xl) var(--space-md);
+    }
+
+    .dropzoneIcon {
+        font-size: 2.2rem;
+    }
+
+    .dropzoneText {
+        font-size: 1rem;
+    }
+
+    .dropzoneSub {
+        font-size: 0.82rem;
+    }
+
+    .submitBtn,
+    .loginBtn {
+        padding: 14px;
+        font-size: 1rem;
+    }
+
+    .authPrompt,
+    .successMsg {
+        margin: 60px auto;
+        padding: var(--space-2xl) var(--space-lg);
+    }
+
+    .authTitle,
+    .successTitle {
+        font-size: 1.5rem;
+    }
+
+    .authText,
+    .successText {
+        font-size: 0.95rem;
     }
 }
 

@@ -487,13 +487,8 @@ export default function ClubDetailPage({ params: paramsPromise }) {
                             {members.slice().sort((a, b) => {
                                 // Calculate sort weights
                                 const getWeight = (member) => {
-                                    if (!isMock) {
-                                        if (member.id === club.adminId) return 3;
-                                        if (club.memberRoles?.[member.id]) return 2;
-                                        return 1;
-                                    }
-                                    if (member.role === 'Admin') return 3;
-                                    if (member.role === 'Core Team') return 2;
+                                    if (member.id === club.adminId) return 3;
+                                    if (club.memberRoles?.[member.id]) return 2;
                                     return 1;
                                 };
                                 return getWeight(b) - getWeight(a);
@@ -502,12 +497,8 @@ export default function ClubDetailPage({ params: paramsPromise }) {
                                 const bg = colors[i % colors.length];
                                 
                                 let role = 'Member';
-                                if (!isMock) {
-                                    if (m.id === club.adminId) role = 'Admin';
-                                    else if (club.memberRoles?.[m.id]) role = club.memberRoles[m.id];
-                                } else {
-                                    role = m.role || 'Member';
-                                }
+                                if (m.id === club.adminId) role = 'Admin';
+                                else if (club.memberRoles?.[m.id]) role = club.memberRoles[m.id];
                                 
                                 const isAdminRole = role === 'Admin';
                                 const isSpecialRole = role !== 'Member' && role !== 'Admin';

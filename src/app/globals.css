@@ -17,14 +17,17 @@
   --gradient-premium: linear-gradient(135deg, #ff007f 0%, #0066ff 100%);
   --gradient-text: linear-gradient(to right, #0f172a 0%, #004ecc 100%);
 
-  --bg-main: #f4f6fb; 
-  --bg-surface: rgba(255, 255, 255, 0.7);
-  --bg-card: rgba(255, 255, 255, 0.6);
-  --bg-input: rgba(255, 255, 255, 0.9);
+  --bg-main: #f8f9fc;
+  --bg-surface: rgba(255, 255, 255, 0.85);
+  --bg-card: rgba(255, 255, 255, 0.75);
+  --bg-input: rgba(255, 255, 255, 0.95);
+  --bg-elevated: rgba(0, 0, 0, 0.03);
+  --bg-subtle: rgba(0, 0, 0, 0.02);
 
   --border: rgba(0, 0, 0, 0.08);
   --border-focus: rgba(0, 102, 255, 0.4);
   --border-glow: rgba(0, 102, 255, 0.3);
+  --border-subtle: rgba(0, 0, 0, 0.05);
 
   --text-primary: #0f172a;
   --text-secondary: #475569;
@@ -35,10 +38,13 @@
   --error: #ef4444;
 
   --shadow-glass: 0 4px 16px rgba(0, 0, 0, 0.04), 0 12px 40px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04);
   --blur-strong: blur(24px);
   --blur-soft: blur(12px);
 
-  --grid-line-color: rgba(0, 0, 0, 0.04);
+  --grid-line-color: rgba(0, 0, 0, 0.03);
   /* Use a lighter grey fill for SVG arrow so it handles double quoting easier or skip SVG replacement and use class */
   --select-option-bg: #ffffff;
   --select-option-color: #0f172a;
@@ -95,10 +101,13 @@
   --bg-surface: rgba(15, 15, 15, 0.6);
   --bg-card: rgba(10, 10, 10, 0.4);
   --bg-input: rgba(20, 20, 20, 0.5);
+  --bg-elevated: rgba(255, 255, 255, 0.05);
+  --bg-subtle: rgba(255, 255, 255, 0.03);
 
   --border: rgba(255, 255, 255, 0.1);
   --border-focus: rgba(59, 130, 246, 0.4);
   --border-glow: rgba(59, 130, 246, 0.3);
+  --border-subtle: rgba(255, 255, 255, 0.06);
 
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.7);
@@ -109,6 +118,9 @@
   --error: #ff5252;
 
   --shadow-glass: 0 4px 16px rgba(0, 0, 0, 0.3), 0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.2);
 
   --grid-line-color: rgba(255, 255, 255, 0.04);
   --select-option-bg: #1a1a24;
@@ -140,6 +152,18 @@ body {
   background-position: center top;
   animation: gridScroll 30s linear infinite;
   transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Bottom padding for mobile nav */
+@media (max-width: 768px) {
+  body { padding-bottom: 80px; }
+  :root { --navbar-height: 64px; }
+  .dark { --navbar-height: 64px; }
+}
+
+@media (max-width: 480px) {
+  :root { --navbar-height: 56px; }
+  .dark { --navbar-height: 56px; }
 }
 
 /* ===== PREMIUM MICRO-INTERACTIONS & POLISH ===== */

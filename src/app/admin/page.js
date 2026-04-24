@@ -23,6 +23,7 @@ export default function AdminPage() {
     const [tab, setTab] = useState('pending');
     const [actionLoading, setActionLoading] = useState('');
     const [usersList, setUsersList] = useState([]);
+    const [newsList, setNewsList] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
 
     // Modal State
@@ -35,6 +36,8 @@ export default function AdminPage() {
         if (isAdmin) {
             if (tab === 'users') {
                 fetchUsers();
+            } else if (tab === 'news') {
+                fetchNews();
             } else {
                 fetchFiles();
             }
@@ -42,6 +45,50 @@ export default function AdminPage() {
             setLoading(false);
         }
     }, [isAdmin, tab]);
+
+    const fetchNews = async () => {
+        setLoading(true);
+        try {
+            const snapshot = await getDocs(collection(db, 'news'));
+            let data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            data = data.filter(n => n.status === 'pending');
+            data.sort((a, b) => {
+               const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
+               const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
+               return timeB - timeA;
+            });
+            setNewsList(data);
+        } catch (error) {
+            console.error('Error fetching news:', error);
+            setNewsList([]);
+        }
+        setLoading(false);
+    };
+
+    const handleApproveNews = async (newsId) => {
+        setActionLoading(newsId);
+        try {
+            await updateDoc(doc(db, 'news', newsId), { status: 'approved' });
+            setNewsList(prev => prev.filter(n => n.id !== newsId));
+        } catch (error) {
+            console.error('Error approving news:', error);
+            alert('Failed to approve news.');
+        }
+        setActionLoading('');
+    };
+
+    const handleRejectNews = async (newsItem) => {
+        if (!confirm(`Reject and delete news "${newsItem.title}"? This cannot be undone.`)) return;
+        setActionLoading(newsItem.id);
+        try {
+            await deleteDoc(doc(db, 'news', newsItem.id));
+            setNewsList(prev => prev.filter(n => n.id !== newsItem.id));
+        } catch (error) {
+            console.error('Error rejecting news:', error);
+            alert('Failed to reject news.');
+        }
+        setActionLoading('');
+    };
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -230,12 +277,59 @@ export default function AdminPage() {
                     <button className={`${styles.tab} ${tab === 'rejected' ? styles.tabActive : ''}`} onClick={() => setTab('rejected')}>
                         ❌ Rejected
                     </button>
+                    <button className={`${styles.tab} ${tab === 'news' ? styles.tabActive : ''}`} onClick={() => setTab('news')}>
+                        📰 Pending News
+                    </button>
                     <button className={`${styles.tab} ${tab === 'users' ? styles.specialActive : ''}`} onClick={() => setTab('users')} style={{marginLeft: 'auto', background: tab === 'users' ? 'rgba(138, 43, 226, 0.1)' : 'transparent'}}>
                         👥 Access Control
                     </button>
                 </div>
 
-                {tab === 'users' ? (
+                {tab === 'news' ? (
+                    <div style={{marginTop: '20px'}}>
+                        {loading ? (
+                            <div className={styles.loadingState}>Fetching pending news...</div>
+                        ) : newsList.length === 0 ? (
+                            <div className={styles.emptyState}>No pending news applications.</div>
+                        ) : (
+                            <div className={styles.fileList}>
+                                {newsList.map(n => (
+                                    <div key={n.id} className={styles.fileCard} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <div className={styles.fileInfo}>
+                                            <div className={styles.fileTitle}>{n.title}</div>
+                                            <div className={styles.fileMeta}>
+                                                <span className={styles.metaTag}><IconUser size={14} /> {n.authorName || 'Unknown'}</span>
+                                                <span className={styles.metaTag}>Type: {n.type || 'General'}</span>
+                                                <span className={styles.metaTag}><IconCalendar size={14} /> {n.timestamp?.toDate ? formatDate(n.timestamp.toDate().toISOString()) : 'Recent'}</span>
+                                            </div>
+                                            <div style={{marginTop: '12px', color: 'var(--text-secondary)', fontSize: '0.9rem', whiteSpace: 'pre-wrap'}}>
+                                                {n.content}
+                                            </div>
+                                        </div>
+                                        <div className={styles.fileActions} style={{flexDirection: 'column'}}>
+                                            <button 
+                                                className={`${styles.actionBtn} ${styles.approveBtn}`}
+                                                onClick={() => handleApproveNews(n.id)}
+                                                disabled={actionLoading === n.id}
+                                                style={{justifyContent: 'center'}}
+                                            >
+                                                <IconCheck size={16} /> {actionLoading === n.id ? '...' : 'Approve'}
+                                            </button>
+                                            <button 
+                                                className={`${styles.actionBtn} ${styles.rejectBtn}`}
+                                                onClick={() => handleRejectNews(n)}
+                                                disabled={actionLoading === n.id}
+                                                style={{justifyContent: 'center'}}
+                                            >
+                                                <IconX size={16} /> Reject
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ) : tab === 'users' ? (
                     <div style={{marginTop: '20px'}}>
                         <div style={{marginBottom: '20px'}}>
                             <input 

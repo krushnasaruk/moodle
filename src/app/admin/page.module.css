@@ -25,7 +25,7 @@
     font-weight: 800;
     color: var(--text-primary);
     margin-bottom: 8px;
-    text-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+    text-shadow: 0 0 20px var(--primary-glow);
 }
 
 .pageDesc {
@@ -55,7 +55,7 @@
 }
 
 .tab:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-elevated);
     color: var(--text-primary);
 }
 
@@ -73,18 +73,18 @@
 .searchBar {
     width: 100%;
     padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-input);
+    border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    color: #fff;
+    color: var(--text-primary);
     font-size: 1rem;
     outline: none;
     transition: all 0.2s ease;
 }
 
 .searchBar:focus {
-    border-color: var(--neo);
-    box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+    border-color: var(--primary);
+    box-shadow: 0 0 10px var(--primary-glow);
 }
 
 .reportedActive {
@@ -113,8 +113,8 @@
 }
 
 .fileCard:hover {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: var(--border-focus);
+    background: var(--bg-elevated);
+    border-color: var(--border);
 }
 
 .reportedCard {
@@ -162,7 +162,7 @@
     gap: 6px;
     font-size: 0.85rem;
     color: var(--text-secondary);
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-elevated);
     padding: 4px 12px;
     border-radius: var(--radius-full);
     border: 1px solid var(--border);
@@ -188,13 +188,13 @@
 }
 
 .previewBtn {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-elevated);
     color: var(--text-primary);
     border-color: var(--border);
 }
 
 .previewBtn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bg-input);
 }
 
 .editBtn {
@@ -231,7 +231,7 @@
 .modalOverlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--bg-card);
     backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
@@ -246,7 +246,7 @@
     padding: 32px;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 40px rgba(138, 43, 226, 0.1);
+    box-shadow: var(--shadow-card);
 }
 
 .modalTitle {
@@ -280,7 +280,7 @@
 .modalSelect, .modalInput {
     width: 100%;
     padding: 12px;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--bg-input);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     color: var(--text-primary);
@@ -314,7 +314,7 @@
 
 .modalCancel:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-elevated);
 }
 
 .modalSave {
@@ -367,4 +367,127 @@
     .fileInfo { margin-right: 0; }
     .fileActions { width: 100%; flex-wrap: wrap; }
     .actionBtn { flex: 1; justify-content: center; }
+}
+
+@media (max-width: 768px) {
+    .pageInner {
+        padding: var(--space-lg) var(--space-md) 100px;
+    }
+
+    .pageTitle {
+        font-size: 1.8rem;
+        gap: 8px;
+    }
+
+    .pageDesc {
+        font-size: 0.95rem;
+    }
+
+    .tabs {
+        overflow-x: auto;
+        justify-content: flex-start;
+        gap: var(--space-xs);
+        padding-bottom: var(--space-sm);
+        scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab {
+        padding: 8px 16px;
+        font-size: 0.82rem;
+        flex-shrink: 0;
+    }
+
+    .fileCard {
+        padding: 16px;
+    }
+
+    .fileTitle {
+        font-size: 1.05rem;
+        flex-wrap: wrap;
+    }
+
+    .fileMeta {
+        gap: 8px;
+    }
+
+    .metaTag {
+        font-size: 0.78rem;
+        padding: 3px 10px;
+    }
+
+    .actionBtn {
+        padding: 6px 12px;
+        font-size: 0.82rem;
+    }
+
+    .modalContent {
+        padding: 24px;
+        width: 95%;
+    }
+}
+
+@media (max-width: 480px) {
+    .pageInner {
+        padding: var(--space-md) var(--space-sm) 100px;
+    }
+
+    .pageTitle {
+        font-size: 1.5rem;
+    }
+
+    .pageDesc {
+        font-size: 0.88rem;
+    }
+
+    .tab {
+        padding: 6px 12px;
+        font-size: 0.78rem;
+    }
+
+    .fileCard {
+        padding: 14px;
+        border-radius: var(--radius-md);
+    }
+
+    .fileTitle {
+        font-size: 0.95rem;
+        gap: 8px;
+    }
+
+    .metaTag {
+        font-size: 0.72rem;
+        padding: 2px 8px;
+    }
+
+    .actionBtn {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+    }
+
+    .modalContent {
+        padding: 20px;
+        border-radius: var(--radius-lg);
+    }
+
+    .modalTitle {
+        font-size: 1.2rem;
+    }
+
+    .modalDesc {
+        font-size: 0.88rem;
+    }
+
+    .emptyState,
+    .accessDenied {
+        padding: 50px 16px;
+    }
+
+    .emptyText,
+    .accessDeniedTitle {
+        font-size: 1.2rem;
+    }
 }
