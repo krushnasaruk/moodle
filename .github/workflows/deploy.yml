@@ -35,7 +35,7 @@ jobs:
       - name: Prepare Standalone Build
         run: |
           mkdir -p deployment
-          cp -r .next/standalone/* deployment/
+          cp -a .next/standalone/. deployment/
           cp -r public deployment/public
           mkdir -p deployment/.next
           cp -r .next/static deployment/.next/static
