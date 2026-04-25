@@ -113,9 +113,9 @@ export default function UploadPage() {
                 fileURL: downloadURL,
                 fileName: safeName,
                 fileSize: file.size,
-                uploader: user.name,
-                uploaderUID: user.uid,
-                uploaderEmail: user.email,
+                uploader: user?.name || 'Anonymous',
+                uploaderUID: user?.uid || 'anonymous',
+                uploaderEmail: user?.email || '',
                 rating: 0,
                 ratingCount: 0,
                 downloads: 0,
@@ -123,11 +123,7 @@ export default function UploadPage() {
                 createdAt: new Date().toISOString(),
             });
 
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("Database connection timeout. The file is uploaded but details failed to save.")), 10000)
-            );
-
-            await Promise.race([saveDocPromise, timeoutPromise]);
+            await saveDocPromise;
 
             setUploadProgress(99);
             setUploadStage('Updating your profile...');
@@ -135,10 +131,12 @@ export default function UploadPage() {
             // 4. Update Profile
             try {
                 // Enhanced Point System: Rewards 50 Points for a contribution
-                await updateDoc(doc(db, 'users', user.uid), {
-                    uploads: increment(1),
-                    points: increment(50),
-                });
+                if (user && user.uid) {
+                    await updateDoc(doc(db, 'users', user.uid), {
+                        uploads: increment(1),
+                        points: increment(50),
+                    });
+                }
             } catch(e) {
                 console.warn('Non-critical: Failed to update user profile stats', e);
             }
@@ -156,22 +154,7 @@ export default function UploadPage() {
         }
     };
 
-    if (!user) {
-        return (
-            <div className={styles.pageWrapper}>
-                <div className={styles.pageInner}>
-                    <div className={styles.authPrompt}>
-                        <div className={styles.authIcon}><IconLock size={64} /></div>
-                        <h2 className={styles.authTitle}>Sign in to Upload</h2>
-                        <p className={styles.authText}>You need to be logged in to share study material with the community.</p>
-                        <Link href="/login" className={styles.loginBtn}>
-                            Go to Login
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+
 
     if (success) {
         return (
