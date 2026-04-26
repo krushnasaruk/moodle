@@ -34,11 +34,19 @@ jobs:
 
       - name: Prepare Standalone Build
         run: |
-          mkdir -p deployment
-          cp -a .next/standalone/. deployment/
-          cp -r public deployment/public
-          mkdir -p deployment/.next
-          cp -r .next/static deployment/.next/static
+          mkdir -p deployment/next-app
+          cp -a .next/standalone/. deployment/next-app/
+          cp -r public deployment/next-app/public
+          mkdir -p deployment/next-app/.next
+          cp -r .next/static deployment/next-app/.next/static
+          
+          # Create root server.js for cPanel Passenger
+          cat << 'EOF' > deployment/server.js
+          const path = require('path');
+          process.chdir(path.join(__dirname, 'next-app'));
+          require('./next-app/server.js');
+          EOF
+          
           mkdir -p deployment/tmp
           touch deployment/tmp/restart.txt
 
