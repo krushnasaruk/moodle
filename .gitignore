@@ -47,3 +47,7 @@ student-platform-source.zip
 /*pattern*
 
 sutraverse-deployment/
+
+# Ignore large uploads
+public/uploads/
+public/pyqs/
